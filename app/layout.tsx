@@ -23,9 +23,7 @@ export default function RootLayout({
         className="min-h-full flex flex-col"
         style={{ backgroundColor: "#0A1628", color: "#ffffff" }}
       >
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
-          {children}
-        </main>
+        {children}
       </body>
     </html>
   );
