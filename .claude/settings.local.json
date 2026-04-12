@@ -15,7 +15,19 @@
       "Bash(rmdir _temp_backup)",
       "Bash(npx shadcn@latest init -d --base-color slate)",
       "Bash(npx shadcn@latest init --help)",
-      "Bash(npx shadcn@latest init -d --css-variables)"
+      "Bash(npx shadcn@latest init -d --css-variables)",
+      "Bash(npm install:*)",
+      "Bash(timeout 15 npx next build)",
+      "Bash(gh auth:*)",
+      "Bash(winget install:*)",
+      "Bash(where gh:*)",
+      "Read(//c/Program Files/GitHub CLI/**)",
+      "Read(//c/Program Files \\(x86\\)/GitHub CLI/**)",
+      "Bash(git config:*)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" --version)",
+      "Bash(cmd.exe /c \"gh --version\")",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" auth status)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" repo create memory-deposit --private --source=. --push)"
     ]
   }
 }
