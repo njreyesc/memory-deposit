@@ -9,7 +9,13 @@
       "Bash(mv memory-deposit/CLAUDE.md memory-deposit/.claude _temp_backup/)",
       "Bash(npx create-next-app@latest memory-deposit --typescript --tailwind --eslint --app --src-dir=false --import-alias=\"@/*\" --use-npm --turbopack)",
       "Bash(mkdir -p _temp_backup)",
-      "Bash(mv memory-deposit/CLAUDE.md.bak memory-deposit/.claude.bak _temp_backup/)"
+      "Bash(mv memory-deposit/CLAUDE.md.bak memory-deposit/.claude.bak _temp_backup/)",
+      "Bash(mv _temp_backup/CLAUDE.md.bak memory-deposit/CLAUDE.md)",
+      "Bash(mv _temp_backup/.claude.bak memory-deposit/.claude)",
+      "Bash(rmdir _temp_backup)",
+      "Bash(npx shadcn@latest init -d --base-color slate)",
+      "Bash(npx shadcn@latest init --help)",
+      "Bash(npx shadcn@latest init -d --css-variables)"
     ]
   }
 }
