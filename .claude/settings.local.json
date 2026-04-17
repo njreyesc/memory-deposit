@@ -45,7 +45,19 @@
       "Bash(pkill -f \"next start\")",
       "mcp__mcp-registry__suggest_connectors",
       "Bash(npx vercel:*)",
-      "Bash(printf \"https://hdxkqxpvgvsaprecnbff.supabase.co\\\\n\")"
+      "Bash(printf \"https://hdxkqxpvgvsaprecnbff.supabase.co\\\\n\")",
+      "mcp__85fb6090-16ff-404f-8cd0-55f8a16c718a__list_projects",
+      "mcp__682a44a2-b7ee-48c5-a4ff-044a39ea142d__list_deployments",
+      "mcp__85fb6090-16ff-404f-8cd0-55f8a16c718a__list_tables",
+      "mcp__85fb6090-16ff-404f-8cd0-55f8a16c718a__apply_migration",
+      "mcp__85fb6090-16ff-404f-8cd0-55f8a16c718a__execute_sql",
+      "Bash(echo \"exit=$?\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(netstat -ano)",
+      "Bash(tasklist /FI \"PID eq 9632\")",
+      "Bash(tasklist //FI \"PID eq 9632\")",
+      "Bash(taskkill //PID 9632 //F)",
+      "Bash(npm ls *)"
     ]
   }
 }
