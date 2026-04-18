@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { RoleSwitcher } from "@/components/sber/role-switcher";
+import { SidebarNav } from "@/components/sber/sidebar-nav";
 
 export default async function AppLayout({
   children,
@@ -31,6 +32,7 @@ export default async function AppLayout({
           <h2 className="text-lg font-bold tracking-tight">Депозит памяти</h2>
           <p className="text-xs text-muted-foreground">v0.1 prototype</p>
         </div>
+        <SidebarNav />
       </aside>
 
       {/* Main */}
