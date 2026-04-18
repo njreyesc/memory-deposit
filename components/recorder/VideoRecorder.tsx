@@ -3,6 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Circle, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
+
+const BUCKET = "videos";
+const MAX_BYTES = 20 * 1024 * 1024;
+const SIGNED_URL_TTL_SECONDS = 60 * 60;
 
 const MAX_SECONDS = 30;
 
@@ -160,21 +165,95 @@ export function VideoRecorder({ onSaved, onCancel }: VideoRecorderProps) {
     setState("saving");
     setError(null);
 
-    const ext = extFromType(blob.type || "video/webm");
-    const form = new FormData();
-    form.append("video", blob, `main.${ext}`);
+    if (blob.size > MAX_BYTES) {
+      setError(
+        `Видео превышает 20 MB (${(blob.size / 1024 / 1024).toFixed(1)} MB).`
+      );
+      setState("preview");
+      return;
+    }
 
     try {
-      const res = await fetch("/api/vault/video", {
-        method: "POST",
-        body: form,
-      });
-      if (!res.ok) {
-        const body = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new Error(body.error ?? `HTTP ${res.status}`);
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Сессия не найдена — войдите заново.");
+
+      const ext = extFromType(blob.type || "video/webm");
+      const path = `${user.id}/main.${ext}`;
+      const contentType = blob.type || `video/${ext}`;
+
+      // Clean up old file if its extension differs from the new one
+      const { data: existing } = await supabase
+        .from("vault_items")
+        .select("id, video_path")
+        .eq("owner_id", user.id)
+        .eq("type", "video")
+        .maybeSingle();
+
+      const existingRow = existing as
+        | { id: string; video_path: string | null }
+        | null;
+
+      if (existingRow?.video_path && existingRow.video_path !== path) {
+        await supabase.storage.from(BUCKET).remove([existingRow.video_path]);
       }
-      const data = (await res.json()) as SavedVideo;
-      onSaved(data);
+
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET)
+        .upload(path, blob, { contentType, upsert: true });
+      if (uploadError) {
+        throw new Error(`Загрузка: ${uploadError.message}`);
+      }
+
+      let rowId: string;
+      let createdAt: string;
+
+      if (existingRow?.id) {
+        const { data, error } = await supabase
+          .from("vault_items")
+          .update({ video_path: path, name: `main.${ext}` })
+          .eq("id", existingRow.id)
+          .select("id, created_at")
+          .single();
+        if (error || !data) {
+          throw new Error(error?.message ?? "Не удалось обновить запись.");
+        }
+        rowId = data.id as string;
+        createdAt = data.created_at as string;
+      } else {
+        const { data, error } = await supabase
+          .from("vault_items")
+          .insert({
+            owner_id: user.id,
+            type: "video",
+            name: `main.${ext}`,
+            video_path: path,
+          })
+          .select("id, created_at")
+          .single();
+        if (error || !data) {
+          throw new Error(error?.message ?? "Не удалось создать запись.");
+        }
+        rowId = data.id as string;
+        createdAt = data.created_at as string;
+      }
+
+      const { data: signed, error: signError } = await supabase.storage
+        .from(BUCKET)
+        .createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
+      if (signError || !signed) {
+        throw new Error(
+          `Не удалось получить ссылку: ${signError?.message ?? "unknown"}`
+        );
+      }
+
+      onSaved({
+        id: rowId,
+        signedUrl: signed.signedUrl,
+        createdAt,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Не удалось сохранить.");
       setState("preview");
