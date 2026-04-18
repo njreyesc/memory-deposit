@@ -4,7 +4,7 @@ import { DEMO_USERS } from "@/lib/auth/demo-users";
 import { RoleSwitcher } from "@/components/sber/role-switcher";
 import { SidebarNav } from "@/components/sber/sidebar-nav";
 
-export default async function AppLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -18,34 +18,24 @@ export default async function AppLayout({
     redirect("/login");
   }
 
-  const isBreadwinner = user.id === DEMO_USERS.alexey.id;
-
-  // Update last_seen_at (fire-and-forget)
-  supabase
-    .from("users")
-    .update({ last_seen_at: new Date().toISOString() })
-    .eq("id", user.id)
-    .then();
+  if (user.id !== DEMO_USERS.alexey.id) {
+    redirect("/vault");
+  }
 
   return (
     <div className="flex min-h-screen">
-      {/* Sidebar */}
       <aside className="flex w-56 flex-col border-r border-white/10 p-4">
         <div className="mb-8">
           <h2 className="text-lg font-bold tracking-tight">Депозит памяти</h2>
           <p className="text-xs text-muted-foreground">v0.1 prototype</p>
         </div>
-        <SidebarNav isBreadwinner={isBreadwinner} />
+        <SidebarNav isBreadwinner={true} />
       </aside>
 
-      {/* Main */}
       <div className="flex flex-1 flex-col">
-        {/* Top bar */}
         <header className="flex items-center justify-end border-b border-white/10 px-6 py-3">
           <RoleSwitcher currentUserId={user.id} />
         </header>
-
-        {/* Content */}
         <main className="flex-1 p-6">{children}</main>
       </div>
     </div>
