@@ -50,6 +50,18 @@ export function VideoRecorder({ onSaved, onCancel }: VideoRecorderProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Bind live stream to the <video> element once it mounts
+  // (on state change to "recording" the element appears in the DOM).
+  useEffect(() => {
+    if (state !== "recording") return;
+    const el = liveVideoRef.current;
+    const stream = streamRef.current;
+    if (!el || !stream) return;
+    el.srcObject = stream;
+    const play = el.play();
+    if (play && typeof play.catch === "function") play.catch(() => {});
+  }, [state]);
+
   function stopStream() {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
@@ -79,10 +91,6 @@ export function VideoRecorder({ onSaved, onCancel }: VideoRecorderProps) {
         audio: true,
       });
       streamRef.current = stream;
-
-      if (liveVideoRef.current) {
-        liveVideoRef.current.srcObject = stream;
-      }
 
       const mime = pickMime();
       const recorder = new MediaRecorder(
