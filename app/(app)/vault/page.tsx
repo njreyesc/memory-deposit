@@ -6,6 +6,10 @@ import {
   VideoSection,
   type VideoItem,
 } from "@/components/vault/video-section";
+import type {
+  AccessRule,
+  Recipient,
+} from "@/components/vault/access-rules-dialog";
 
 const VIDEO_BUCKET = "videos";
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
@@ -33,7 +37,7 @@ export default async function VaultPage() {
     );
   }
 
-  const [notesRes, videoRes] = await Promise.all([
+  const [notesRes, videoRes, recipientsRes, rulesRes] = await Promise.all([
     supabase
       .from("vault_items")
       .select("id, title, content, created_at")
@@ -46,6 +50,14 @@ export default async function VaultPage() {
       .eq("owner_id", user.id)
       .eq("type", "video")
       .maybeSingle(),
+    supabase
+      .from("recipients")
+      .select("id, full_name, relation")
+      .eq("owner_id", user.id)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("access_rules")
+      .select("id, vault_item_id, recipient_id, delay_days"),
   ]);
 
   if (notesRes.error) {
@@ -60,6 +72,13 @@ export default async function VaultPage() {
   }
 
   const notes = (notesRes.data ?? []) as Note[];
+  const recipients = (recipientsRes.data ?? []) as Recipient[];
+  const allRules = (rulesRes.data ?? []) as AccessRule[];
+
+  const rulesByItem: Record<string, AccessRule[]> = {};
+  for (const rule of allRules) {
+    (rulesByItem[rule.vault_item_id] ??= []).push(rule);
+  }
 
   let initialVideo: VideoItem | null = null;
   const videoRow = videoRes.data as
@@ -80,6 +99,8 @@ export default async function VaultPage() {
     }
   }
 
+  const videoRules = initialVideo ? rulesByItem[initialVideo.id] ?? [] : [];
+
   return (
     <div className="space-y-8">
       <div>
@@ -88,8 +109,17 @@ export default async function VaultPage() {
           Видеообращение, письма и заметки для близких
         </p>
       </div>
-      <VideoSection initialVideo={initialVideo} />
-      <NotesSection ownerId={user.id} initialNotes={notes} />
+      <VideoSection
+        initialVideo={initialVideo}
+        recipients={recipients}
+        initialRules={videoRules}
+      />
+      <NotesSection
+        ownerId={user.id}
+        initialNotes={notes}
+        recipients={recipients}
+        initialRulesByItem={rulesByItem}
+      />
     </div>
   );
 }

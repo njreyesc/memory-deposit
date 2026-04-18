@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { RotateCcw, Trash2, Video as VideoIcon } from "lucide-react";
+import { RotateCcw, Trash2, Users, Video as VideoIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +13,13 @@ import {
   VideoRecorder,
   type SavedVideo,
 } from "@/components/recorder/VideoRecorder";
+import {
+  AccessRulesDialog,
+  createSpouseDefaultRule,
+  formatAccessRulesLabel,
+  type AccessRule,
+  type Recipient,
+} from "@/components/vault/access-rules-dialog";
 
 export interface VideoItem {
   id: string;
@@ -22,21 +29,33 @@ export interface VideoItem {
 
 interface VideoSectionProps {
   initialVideo: VideoItem | null;
+  recipients: Recipient[];
+  initialRules: AccessRule[];
 }
 
-export function VideoSection({ initialVideo }: VideoSectionProps) {
+export function VideoSection({
+  initialVideo,
+  recipients,
+  initialRules,
+}: VideoSectionProps) {
   const [video, setVideo] = useState<VideoItem | null>(initialVideo);
+  const [rules, setRules] = useState<AccessRule[]>(initialRules);
   const [open, setOpen] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function handleSaved(saved: SavedVideo) {
+  async function handleSaved(saved: SavedVideo) {
     setVideo({
       id: saved.id,
       signedUrl: saved.signedUrl,
       createdAt: saved.createdAt,
     });
     setOpen(false);
+    if (rules.length === 0) {
+      const defaultRule = await createSpouseDefaultRule(saved.id, recipients);
+      if (defaultRule) setRules([defaultRule]);
+    }
   }
 
   async function handleDelete() {
@@ -51,10 +70,14 @@ export function VideoSection({ initialVideo }: VideoSectionProps) {
         return;
       }
       setVideo(null);
+      setRules([]);
     } finally {
       setBusy(false);
     }
   }
+
+  const label = formatAccessRulesLabel(rules, recipients);
+  const empty = rules.length === 0;
 
   return (
     <section className="space-y-3">
@@ -87,6 +110,15 @@ export function VideoSection({ initialVideo }: VideoSectionProps) {
             controls
             className="aspect-video w-full rounded-md bg-black"
           />
+          <p
+            className={
+              empty
+                ? "text-xs text-muted-foreground/60"
+                : "text-xs text-muted-foreground"
+            }
+          >
+            {label}
+          </p>
           <div className="flex flex-wrap items-center gap-2">
             <p className="mr-auto text-xs text-muted-foreground">
               Записано{" "}
@@ -96,6 +128,15 @@ export function VideoSection({ initialVideo }: VideoSectionProps) {
                 year: "numeric",
               })}
             </p>
+            <Button
+              variant="outline"
+              onClick={() => setRulesOpen(true)}
+              disabled={busy}
+              className="gap-2"
+            >
+              <Users className="h-4 w-4" />
+              Кому передать
+            </Button>
             <Button
               variant="outline"
               onClick={() => setOpen(true)}
@@ -134,6 +175,18 @@ export function VideoSection({ initialVideo }: VideoSectionProps) {
           />
         </DialogContent>
       </Dialog>
+
+      {video && (
+        <AccessRulesDialog
+          open={rulesOpen}
+          onOpenChange={setRulesOpen}
+          vaultItemId={video.id}
+          itemLabel="Видеообращение"
+          recipients={recipients}
+          currentRules={rules}
+          onSaved={(next) => setRules(next)}
+        />
+      )}
     </section>
   );
 }

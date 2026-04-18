@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +13,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import {
+  AccessRulesDialog,
+  createSpouseDefaultRule,
+  formatAccessRulesLabel,
+  type AccessRule,
+  type Recipient,
+} from "@/components/vault/access-rules-dialog";
 
 export interface Note {
   id: string;
@@ -31,14 +38,24 @@ type NoteForm = z.infer<typeof noteSchema>;
 interface NotesSectionProps {
   ownerId: string;
   initialNotes: Note[];
+  recipients: Recipient[];
+  initialRulesByItem: Record<string, AccessRule[]>;
 }
 
-export function NotesSection({ ownerId, initialNotes }: NotesSectionProps) {
+export function NotesSection({
+  ownerId,
+  initialNotes,
+  recipients,
+  initialRulesByItem,
+}: NotesSectionProps) {
   const [notes, setNotes] = useState<Note[]>(initialNotes);
+  const [rulesByItem, setRulesByItem] =
+    useState<Record<string, AccessRule[]>>(initialRulesByItem);
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [rulesNoteId, setRulesNoteId] = useState<string | null>(null);
 
   const form = useForm<NoteForm>({
     resolver: zodResolver(noteSchema),
@@ -99,7 +116,13 @@ export function NotesSection({ ownerId, initialNotes }: NotesSectionProps) {
         return;
       }
 
-      setNotes((prev) => [data as Note, ...prev]);
+      const note = data as Note;
+      setNotes((prev) => [note, ...prev]);
+
+      const defaultRule = await createSpouseDefaultRule(note.id, recipients);
+      if (defaultRule) {
+        setRulesByItem((prev) => ({ ...prev, [note.id]: [defaultRule] }));
+      }
     }
 
     setSaving(false);
@@ -121,7 +144,20 @@ export function NotesSection({ ownerId, initialNotes }: NotesSectionProps) {
     }
 
     setNotes((prev) => prev.filter((n) => n.id !== id));
+    setRulesByItem((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
   }
+
+  function handleRulesSaved(noteId: string, newRules: AccessRule[]) {
+    setRulesByItem((prev) => ({ ...prev, [noteId]: newRules }));
+  }
+
+  const rulesNote = rulesNoteId
+    ? notes.find((n) => n.id === rulesNoteId) ?? null
+    : null;
 
   return (
     <section className="space-y-4">
@@ -149,42 +185,64 @@ export function NotesSection({ ownerId, initialNotes }: NotesSectionProps) {
         </div>
       ) : (
         <ul className="space-y-3">
-          {notes.map((note) => (
-            <li
-              key={note.id}
-              className="flex items-start justify-between gap-4 rounded-lg border border-white/10 bg-card p-4"
-            >
-              <div className="min-w-0 flex-1">
-                <h3 className="truncate font-medium">{note.title}</h3>
-                <p className="text-xs text-muted-foreground">
-                  {new Date(note.created_at).toLocaleDateString("ru-RU", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </p>
-              </div>
-              <div className="flex gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => openEdit(note)}
-                  aria-label="Редактировать"
-                >
-                  <Pencil />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => handleDelete(note.id)}
-                  aria-label="Удалить"
-                  className="text-destructive"
-                >
-                  <Trash2 />
-                </Button>
-              </div>
-            </li>
-          ))}
+          {notes.map((note) => {
+            const rules = rulesByItem[note.id] ?? [];
+            const label = formatAccessRulesLabel(rules, recipients);
+            const empty = rules.length === 0;
+            return (
+              <li
+                key={note.id}
+                className="flex items-start justify-between gap-4 rounded-lg border border-white/10 bg-card p-4"
+              >
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate font-medium">{note.title}</h3>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(note.created_at).toLocaleDateString("ru-RU", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                  <p
+                    className={
+                      empty
+                        ? "mt-2 text-xs text-muted-foreground/60"
+                        : "mt-2 text-xs text-muted-foreground"
+                    }
+                  >
+                    {label}
+                  </p>
+                </div>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => setRulesNoteId(note.id)}
+                    aria-label="Кому передать"
+                  >
+                    <Users />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => openEdit(note)}
+                    aria-label="Редактировать"
+                  >
+                    <Pencil />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => handleDelete(note.id)}
+                    aria-label="Удалить"
+                    className="text-destructive"
+                  >
+                    <Trash2 />
+                  </Button>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
 
@@ -262,6 +320,20 @@ export function NotesSection({ ownerId, initialNotes }: NotesSectionProps) {
           </form>
         </DialogContent>
       </Dialog>
+
+      {rulesNote && (
+        <AccessRulesDialog
+          open={true}
+          onOpenChange={(v) => {
+            if (!v) setRulesNoteId(null);
+          }}
+          vaultItemId={rulesNote.id}
+          itemLabel={rulesNote.title}
+          recipients={recipients}
+          currentRules={rulesByItem[rulesNote.id] ?? []}
+          onSaved={(rules) => handleRulesSaved(rulesNote.id, rules)}
+        />
+      )}
     </section>
   );
 }
