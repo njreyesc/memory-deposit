@@ -56,12 +56,66 @@ create policy "vault_storage_delete"
   );
 ```
 
+## Creating Storage Bucket `videos`
+
+Separate bucket for video messages. Video is NOT encrypted in the prototype
+(see CLAUDE.md — architectural decision, not a security gap).
+
+1. Go to **Storage > New bucket**
+2. Name: `videos`
+3. **Private** (not public)
+4. File size limit: **20 MB**
+
+Then add these policies via **SQL Editor**. Owner is identified by the first
+folder segment of the object path (`{owner_id}/main.webm`):
+
+```sql
+-- Owner can upload their own video (path starts with their user id)
+create policy "videos_storage_insert"
+  on storage.objects for insert
+  with check (
+    bucket_id = 'videos'
+    and auth.role() = 'authenticated'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- Owner can read their own video
+-- (recipient access will be added at Step 9 together with event delivery.)
+create policy "videos_storage_select"
+  on storage.objects for select
+  using (
+    bucket_id = 'videos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- Owner can overwrite their own video (re-record)
+create policy "videos_storage_update"
+  on storage.objects for update
+  using (
+    bucket_id = 'videos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  )
+  with check (
+    bucket_id = 'videos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- Owner can delete their own video
+create policy "videos_storage_delete"
+  on storage.objects for delete
+  using (
+    bucket_id = 'videos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+```
+
 ## Visual Check (2 min)
 
 - [ ] 6 tables visible in **Table Editor**: users, vault_items, recipients, access_rules, triggers, audit_log
 - [ ] Each table has the RLS icon (green lock)
 - [ ] In **Authentication > Policies** each table has its policies listed
 - [ ] Bucket `vault` exists and is **Private**
+- [ ] Bucket `videos` exists, is **Private**, 20 MB limit, 4 policies attached
 - [ ] `users` table has 2 rows with expected UUIDs:
   - `11111111-1111-1111-1111-111111111111` — Alexey Ivanov
   - `22222222-2222-2222-2222-222222222222` — Maria Ivanova

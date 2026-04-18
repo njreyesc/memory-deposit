@@ -124,12 +124,12 @@ export function NotesSection({ ownerId, initialNotes }: NotesSectionProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <section className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Хранилище</h1>
+          <h2 className="text-xl font-semibold">Письма и заметки</h2>
           <p className="text-sm text-muted-foreground">
-            Письма и заметки для близких
+            Короткие тексты для ваших близких
           </p>
         </div>
         <Button
@@ -262,6 +262,6 @@ export function NotesSection({ ownerId, initialNotes }: NotesSectionProps) {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </section>
   );
 }

@@ -75,7 +75,10 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" https://memory-deposit.vercel.app/)",
       "Bash(grep -v '^\\\\s*$\\\\|^#' .env.local)",
       "Bash(curl -s -o /dev/null -w \"prod-alias=%{http_code}\\\\n\" https://memory-deposit.vercel.app/login)",
-      "Bash(curl -s -o /dev/null -w \"direct=%{http_code}\\\\n\" https://memory-deposit-ksa3y11p6-njreyescs-projects.vercel.app/login)"
+      "Bash(curl -s -o /dev/null -w \"direct=%{http_code}\\\\n\" https://memory-deposit-ksa3y11p6-njreyescs-projects.vercel.app/login)",
+      "Bash(rm -rf C:/Users/Sorvachev/Documents/vibecoding/memory-deposit/.next/dev)",
+      "Bash(rm -f C:/Users/Sorvachev/Documents/vibecoding/memory-deposit/tsconfig.tsbuildinfo)",
+      "mcp__85fb6090-16ff-404f-8cd0-55f8a16c718a__get_advisors"
     ]
   }
 }
