@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Circle, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -31,7 +31,6 @@ function extFromType(mime: string): string {
 }
 
 export function VideoRecorder({ onSaved, onCancel }: VideoRecorderProps) {
-  const liveVideoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -50,17 +49,17 @@ export function VideoRecorder({ onSaved, onCancel }: VideoRecorderProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Bind live stream to the <video> element once it mounts
-  // (on state change to "recording" the element appears in the DOM).
-  useEffect(() => {
-    if (state !== "recording") return;
-    const el = liveVideoRef.current;
+  // Callback ref fires synchronously when the <video> element mounts/unmounts
+  // inside the Dialog portal. This is more reliable than a useEffect on state,
+  // which can race with the portal's mount animation.
+  const attachLiveVideo = useCallback((el: HTMLVideoElement | null) => {
+    if (!el) return;
     const stream = streamRef.current;
-    if (!el || !stream) return;
+    if (!stream) return;
     el.srcObject = stream;
-    const play = el.play();
-    if (play && typeof play.catch === "function") play.catch(() => {});
-  }, [state]);
+    const p = el.play();
+    if (p && typeof p.catch === "function") p.catch(() => {});
+  }, []);
 
   function stopStream() {
     if (streamRef.current) {
@@ -248,7 +247,7 @@ export function VideoRecorder({ onSaved, onCancel }: VideoRecorderProps) {
         <div className="space-y-3">
           <div className="relative overflow-hidden rounded-lg border border-white/10 bg-black">
             <video
-              ref={liveVideoRef}
+              ref={attachLiveVideo}
               autoPlay
               muted
               playsInline
