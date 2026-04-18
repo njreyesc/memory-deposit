@@ -57,7 +57,25 @@
       "Bash(tasklist /FI \"PID eq 9632\")",
       "Bash(tasklist //FI \"PID eq 9632\")",
       "Bash(taskkill //PID 9632 //F)",
-      "Bash(npm ls *)"
+      "Bash(npm ls *)",
+      "Bash(gh pr create --base main --head feat/vault-letters --title 'feat: letters vault with RLS-gated recipient stub' --body ' *)",
+      "Bash(gh pr *)",
+      "mcp__682a44a2-b7ee-48c5-a4ff-044a39ea142d__deploy_to_vercel",
+      "Bash(vercel deploy *)",
+      "mcp__682a44a2-b7ee-48c5-a4ff-044a39ea142d__get_deployment_build_logs",
+      "mcp__682a44a2-b7ee-48c5-a4ff-044a39ea142d__get_deployment",
+      "mcp__682a44a2-b7ee-48c5-a4ff-044a39ea142d__get_runtime_logs",
+      "Bash(curl -sI https://memory-deposit.vercel.app/login)",
+      "Bash(curl -sI https://memory-deposit-7k8hte8az-njreyescs-projects.vercel.app/login)",
+      "Bash(curl -s https://memory-deposit-7k8hte8az-njreyescs-projects.vercel.app/login)",
+      "Bash(curl -sI https://memory-deposit.vercel.app/)",
+      "Bash(curl -s https://memory-deposit.vercel.app/login)",
+      "Bash(curl -s https://memory-deposit.vercel.app/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" https://memory-deposit.vercel.app/login)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" https://memory-deposit.vercel.app/)",
+      "Bash(grep -v '^\\\\s*$\\\\|^#' .env.local)",
+      "Bash(curl -s -o /dev/null -w \"prod-alias=%{http_code}\\\\n\" https://memory-deposit.vercel.app/login)",
+      "Bash(curl -s -o /dev/null -w \"direct=%{http_code}\\\\n\" https://memory-deposit-ksa3y11p6-njreyescs-projects.vercel.app/login)"
     ]
   }
 }
