@@ -58,7 +58,7 @@ Sber top management, SberDisk product team, CISO. Scenario: a click-through tour
 
 2. **Завершение задачи = PR, не коммит.** Когда фича готова и я закоммитил — Claude пушит ветку и создаёт PR через `gh pr create` с осмысленным title (под 70 символов) и body (Summary + Test plan). PR-описание — вместо «здесь готово» в чате.
 
-3. **После `gh pr create` — обязательный `dual-review`.** Сразу же вызвать skill `dual-review` на свежесозданном PR. Без этого задача не считается завершённой. Skill параллельно запускает `reviewer` и `codex-reviewer`, оба постят свои комменты в PR. Это enforced хуком в `.claude/settings.json` — после успешного `gh pr create` Claude получит system-reminder про обязательный шаг.
+3. **Ревью PR — только по явной просьбе пользователя.** После `gh pr create` задача считается завершённой. Skill `dual-review` доступен для запуска, но Claude НЕ инициирует его сам. Ревью запускается ТОЛЬКО когда пользователь явно сказал: «прогони ревью», «review этот PR», `/dual-review`, или аналогично. В этом случае Claude вызывает `Skill({ skill: "dual-review", args: "<PR URL>" })`, который дёргает агента `reviewer`, постящего review в PR через `gh`. До явной просьбы — никаких авто-ревью, никаких напоминаний «не забыл ли ты ревью», никакого предложения «может прогнать ревьюер?». Авто-trigger через хук тоже убран намеренно (был шумным из-за false-positive на substring в коммит-сообщениях).
 
 ## Folder Structure (created incrementally)
 ```
