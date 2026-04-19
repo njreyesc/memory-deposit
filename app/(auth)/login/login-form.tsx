@@ -47,8 +47,8 @@ export function LoginForm() {
     <>
       <Button
         size="lg"
-        className="w-full gap-2 text-base font-semibold text-white"
-        style={{ backgroundColor: "var(--brand-sber)" }}
+        variant="outline"
+        className="w-full gap-2 rounded-full text-base font-medium"
         onClick={() => setOpen(true)}
       >
         <Shield className="h-5 w-5" />

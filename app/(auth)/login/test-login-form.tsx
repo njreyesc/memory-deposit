@@ -135,9 +135,9 @@ export default function TestLoginForm() {
         <Button
           type="submit"
           size="lg"
+          variant="default"
           disabled={submitting}
-          className="w-full gap-2 text-base font-semibold text-white"
-          style={{ backgroundColor: "#21A038" }}
+          className="w-full gap-2 rounded-full bg-foreground text-base font-medium text-background hover:bg-foreground/90"
         >
           {submitting ? "Создаём сессию..." : "Начать тестирование"}
           {!submitting && <ArrowRight className="h-5 w-5" />}
