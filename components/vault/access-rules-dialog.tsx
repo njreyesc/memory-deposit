@@ -48,7 +48,7 @@ export function formatAccessRulesLabel(
   rules: AccessRule[],
   recipients: Recipient[]
 ): string {
-  if (rules.length === 0) return "Получатели не назначены";
+  if (rules.length === 0) return "Близкие не назначены";
   const byId = new Map(recipients.map((r) => [r.id, r]));
   const parts = rules
     .map((rule) => {
@@ -57,7 +57,7 @@ export function formatAccessRulesLabel(
       return `${r.full_name} (${daysLabel(rule.delay_days)})`;
     })
     .filter((s): s is string => s !== null);
-  if (parts.length === 0) return "Получатели не назначены";
+  if (parts.length === 0) return "Близкие не назначены";
   return `Получат: ${parts.join(", ")}`;
 }
 
@@ -222,7 +222,7 @@ export function AccessRulesDialog({
 
         {recipients.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
-            Сначала добавьте получателей в разделе «Получатели».
+            Сначала добавьте близких в разделе «Близкие».
           </p>
         ) : (
           <ul className="space-y-3">

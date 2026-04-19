@@ -2,16 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FlaskConical, FolderLock, Users } from "lucide-react";
+import { FlaskConical, HeartHandshake, Users2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { href: "/vault", label: "Хранилище", icon: FolderLock },
-  { href: "/recipients", label: "Получатели", icon: Users },
+  { href: "/vault", label: "Забота", icon: HeartHandshake },
+  { href: "/recipients", label: "Близкие", icon: Users2 },
 ];
 
 const ADMIN_NAV_ITEMS = [
-  { href: "/simulate", label: "Демо", icon: FlaskConical },
+  { href: "/simulate", label: "Демо-режим", icon: FlaskConical },
 ];
 
 interface SidebarNavProps {
