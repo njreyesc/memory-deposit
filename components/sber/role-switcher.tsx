@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, LogOut, User } from "lucide-react";
+import { ChevronDown, LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,21 +12,88 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { DEMO_USERS, type DemoRole } from "@/lib/auth/demo-users";
 
+export type TestSessionInfo = {
+  token: string;
+  breadwinnerUserId: string;
+  recipientUserId: string;
+  breadwinnerName: string;
+  recipientName: string;
+};
+
 interface RoleSwitcherProps {
   currentUserId: string;
+  testSession?: TestSessionInfo;
 }
 
-export function RoleSwitcher({ currentUserId }: RoleSwitcherProps) {
+export function RoleSwitcher({
+  currentUserId,
+  testSession,
+}: RoleSwitcherProps) {
   const [switching, setSwitching] = useState(false);
 
-  const currentRole: DemoRole =
-    currentUserId === DEMO_USERS.alexey.id ? "alexey" : "maria";
-  const currentUser = DEMO_USERS[currentRole];
+  const isTestMode = Boolean(testSession);
+
+  const currentRole: DemoRole = testSession
+    ? currentUserId === testSession.breadwinnerUserId
+      ? "alexey"
+      : "maria"
+    : currentUserId === DEMO_USERS.alexey.id
+      ? "alexey"
+      : "maria";
   const otherRole: DemoRole = currentRole === "alexey" ? "maria" : "alexey";
-  const otherUser = DEMO_USERS[otherRole];
+
+  const alexeyLabel = testSession
+    ? testSession.breadwinnerName
+    : DEMO_USERS.alexey.full_name;
+  const mariaLabel = testSession
+    ? testSession.recipientName
+    : DEMO_USERS.maria.full_name;
+  const currentLabel = currentRole === "alexey" ? alexeyLabel : mariaLabel;
+  const otherLabel = otherRole === "alexey" ? alexeyLabel : mariaLabel;
+
+  const initialOf = (s: string) => s.trim().charAt(0).toUpperCase() || "?";
+  const currentInitial = isTestMode
+    ? initialOf(currentLabel)
+    : DEMO_USERS[currentRole].avatar_initial;
+  const otherInitial = isTestMode
+    ? initialOf(otherLabel)
+    : DEMO_USERS[otherRole].avatar_initial;
+
+  const otherRoleKind = otherRole === "alexey" ? "breadwinner" : "recipient";
 
   async function handleSwitch() {
     setSwitching(true);
+
+    if (testSession) {
+      try {
+        const r = await fetch("/api/mock-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            role: otherRole,
+            sessionToken: testSession.token,
+          }),
+        });
+        if (r.status === 401) {
+          window.location.assign("/login");
+          return;
+        }
+        if (!r.ok) {
+          console.error("role switch failed", await r.text());
+          setSwitching(false);
+          return;
+        }
+        const { access_token, refresh_token } = await r.json();
+        const supabase = createClient();
+        await supabase.auth.setSession({ access_token, refresh_token });
+        window.location.assign(window.location.pathname);
+      } catch (err) {
+        console.error("Switch error:", err);
+        setSwitching(false);
+      }
+      return;
+    }
+
     try {
       const res = await fetch("/api/mock-login", {
         method: "POST",
@@ -62,13 +129,12 @@ export function RoleSwitcher({ currentUserId }: RoleSwitcherProps) {
         <div
           className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white"
           style={{
-            backgroundColor:
-              currentRole === "alexey" ? "#21A038" : "#4CAF50",
+            backgroundColor: currentRole === "alexey" ? "#21A038" : "#4CAF50",
           }}
         >
-          {currentUser.avatar_initial}
+          {currentInitial}
         </div>
-        <span className="text-sm font-medium">{currentUser.full_name}</span>
+        <span className="text-sm font-medium">{currentLabel}</span>
         <ChevronDown className="h-4 w-4 text-muted-foreground" />
       </DropdownMenuTrigger>
 
@@ -81,16 +147,15 @@ export function RoleSwitcher({ currentUserId }: RoleSwitcherProps) {
           <div
             className="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white"
             style={{
-              backgroundColor:
-                otherRole === "alexey" ? "#21A038" : "#4CAF50",
+              backgroundColor: otherRole === "alexey" ? "#21A038" : "#4CAF50",
             }}
           >
-            {otherUser.avatar_initial}
+            {otherInitial}
           </div>
           <div>
-            <p className="text-sm">{otherUser.full_name}</p>
+            <p className="text-sm">{otherLabel}</p>
             <p className="text-xs text-muted-foreground">
-              {otherUser.role === "breadwinner" ? "Кормилец" : "Получатель"}
+              {otherRoleKind === "breadwinner" ? "Кормилец" : "Получатель"}
             </p>
           </div>
         </DropdownMenuItem>
