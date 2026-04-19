@@ -12,6 +12,7 @@ import type {
   Recipient,
 } from "@/components/vault/access-rules-dialog";
 import { EventStatusBanner } from "@/components/vault/event-status-banner";
+import { CareSummary } from "@/components/vault/care-summary";
 import {
   RecipientView,
   type RecipientMaterial,
@@ -123,7 +124,7 @@ async function RecipientVault() {
 async function BreadwinnerVault({ userId }: { userId: string }) {
   const supabase = await createClient();
 
-  const [notesRes, videoRes, recipientsRes, rulesRes, triggerRes] =
+  const [notesRes, videoRes, recipientsRes, rulesRes, triggerRes, userRes] =
     await Promise.all([
       supabase
         .from("vault_items")
@@ -152,6 +153,11 @@ async function BreadwinnerVault({ userId }: { userId: string }) {
         .eq("status", "delivered")
         .order("confirmed_at", { ascending: false })
         .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("users")
+        .select("full_name")
+        .eq("id", userId)
         .maybeSingle(),
     ]);
 
@@ -199,6 +205,9 @@ async function BreadwinnerVault({ userId }: { userId: string }) {
 
   const videoRules = initialVideo ? rulesByItem[initialVideo.id] ?? [] : [];
 
+  const userRow = userRes.data as { full_name: string | null } | null;
+  const firstName = (userRow?.full_name ?? "").split(/\s+/)[0] || "друг";
+
   return (
     <div className="space-y-8">
       {deliveredTrigger?.confirmed_at && (
@@ -210,6 +219,12 @@ async function BreadwinnerVault({ userId }: { userId: string }) {
           Видео, письма и заметки — то, что останется рядом с близкими
         </p>
       </div>
+      <CareSummary
+        firstName={firstName}
+        notesCount={notes.length}
+        hasVideo={initialVideo !== null}
+        recipientsCount={recipients.length}
+      />
       <VideoSection
         initialVideo={initialVideo}
         recipients={recipients}
