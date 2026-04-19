@@ -160,21 +160,11 @@ export function RecipientsSection({
 
   return (
     <section className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold">Список получателей</h2>
-          <p className="text-sm text-muted-foreground">
-            Близкие, которым откроется доступ после подтверждения события
-          </p>
-        </div>
-        <Button
-          onClick={openCreate}
-          className="gap-2 text-white"
-          style={{ backgroundColor: "#21A038" }}
-        >
-          <Plus className="h-4 w-4" />
-          Добавить получателя
-        </Button>
+      <div>
+        <h2 className="text-xl font-semibold">Список получателей</h2>
+        <p className="text-sm text-muted-foreground">
+          Близкие, которым откроется доступ после подтверждения события
+        </p>
       </div>
 
       {recipients.length === 0 ? (
@@ -225,6 +215,15 @@ export function RecipientsSection({
           ))}
         </ul>
       )}
+
+      <button
+        type="button"
+        onClick={openCreate}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-foreground px-6 py-4 text-sm font-medium text-background transition hover:opacity-90"
+      >
+        <Plus className="h-4 w-4" />
+        Добавить получателя
+      </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-lg">

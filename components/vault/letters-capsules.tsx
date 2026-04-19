@@ -301,7 +301,7 @@ export function LettersCapsules({
           <div className="space-y-4">
           <ul className="space-y-4">
             {notes.length === 0 ? (
-              <EmptyLetterCard onStart={() => openCreate()} />
+              <EmptyLetterCard />
             ) : (
               notes.map((note, idx) => {
                 const { head, tail } = parseTitle(note.title);
@@ -604,22 +604,13 @@ function TabButton({
   );
 }
 
-function EmptyLetterCard({ onStart }: { onStart: () => void }) {
+function EmptyLetterCard() {
   return (
     <li className="rounded-2xl border border-dashed border-border bg-card/60 p-8 text-center">
       <p className="text-sm text-muted-foreground">
-        Здесь будут ваши письма. Начните с одной темы справа — или напишите
-        своё.
+        Здесь будут ваши письма. Начните с одной темы справа — или нажмите
+        «Новое письмо» ниже.
       </p>
-      <Button
-        size="sm"
-        className="mt-4 gap-2 rounded-full px-5 text-white"
-        style={{ backgroundColor: "#21A038" }}
-        onClick={onStart}
-      >
-        <Plus className="h-3.5 w-3.5" />
-        Написать первое письмо
-      </Button>
     </li>
   );
 }
@@ -648,19 +639,21 @@ function VideoCapsulePanel({
 
   if (!video) {
     return (
-      <div className="rounded-2xl border border-dashed border-border bg-card/60 p-10 text-center">
-        <p className="mx-auto max-w-md text-sm text-muted-foreground">
-          Пока нет видеокапсулы. Короткое видео — до 30 секунд — чтобы близкие
-          услышали ваш голос.
-        </p>
-        <Button
+      <div className="space-y-4">
+        <div className="rounded-2xl border border-dashed border-border bg-card/60 p-10 text-center">
+          <p className="mx-auto max-w-md text-sm text-muted-foreground">
+            Пока нет видеокапсулы. Короткое видео — до 30 секунд — чтобы
+            близкие услышали ваш голос.
+          </p>
+        </div>
+        <button
+          type="button"
           onClick={onRecord}
-          className="mt-5 gap-2 rounded-full px-5 text-white"
-          style={{ backgroundColor: "#21A038" }}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-foreground px-6 py-4 text-sm font-medium text-background transition hover:opacity-90"
         >
           <VideoIcon className="h-4 w-4" />
           Записать видеообращение
-        </Button>
+        </button>
       </div>
     );
   }
