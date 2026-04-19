@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { DEMO_USERS } from "@/lib/auth/demo-users";
 
 function makeRequestId(): string {
   // 11-digit numeric id; not cryptographically meaningful — demo only.
@@ -14,8 +15,8 @@ export async function POST() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user || user.id !== DEMO_USERS.alexey.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const requestId = makeRequestId();
