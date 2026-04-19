@@ -36,7 +36,7 @@ export function LoginForm() {
       const supabase = createClient();
       await supabase.auth.setSession({ access_token, refresh_token });
 
-      router.push("/vault");
+      router.push("/welcome");
     } catch (err) {
       console.error("Login error:", err);
       setLoading(false);
