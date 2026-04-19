@@ -38,7 +38,7 @@ Sber top management, SberDisk product team, CISO. Scenario: a click-through tour
 4. **SberID — fake button.** No real OAuth integration. There is a role switcher "Alexey / Maria" for the demo.
 5. **SMEV/ZAGS — mocked via admin endpoint /simulate.** One button: "Simulate event confirmation."
 
-## Rules for Working with Claude Code
+## Rules for Working with Codex
 - Work on ONE feature at a time. Do not start the next one without my OK.
 - At the end of each feature — a short summary: what was done, how to verify.
 - If there's a fork in implementation — ask, don't assume.
@@ -46,19 +46,6 @@ Sber top management, SberDisk product team, CISO. Scenario: a click-through tour
 - TypeScript strict, `any` is forbidden.
 - I make commits myself; do not create them.
 - Do not "optimize on the side" or "add bonus features."
-
-## Development Workflow (mandatory)
-1. **Branch per task.** Каждая задача = отдельная ветка от `main`. Название по конвенции (совпадает с commit-prefix'ами):
-   - `feat/<slug>` — новая фича (`feat/recipient-vault-view`)
-   - `fix/<slug>` — багфикс (`fix/simulate-event-role-guard`)
-   - `chore/<slug>` — рефакторинг, конфиги, зависимости
-   - `docs/<slug>` — только документация
-   Slug — kebab-case, краткий (3-5 слов), на латинице.
-   Создавать ветку **до** первой правки кода: `git checkout -b feat/<slug>`. Не работать в `main` напрямую.
-
-2. **Завершение задачи = PR, не коммит.** Когда фича готова и я закоммитил — Claude пушит ветку и создаёт PR через `gh pr create` с осмысленным title (под 70 символов) и body (Summary + Test plan). PR-описание — вместо «здесь готово» в чате.
-
-3. **После `gh pr create` — обязательный `dual-review`.** Сразу же вызвать skill `dual-review` на свежесозданном PR. Без этого задача не считается завершённой. Skill параллельно запускает `reviewer` и `codex-reviewer`, оба постят свои комменты в PR. Это enforced хуком в `.claude/settings.json` — после успешного `gh pr create` Claude получит system-reminder про обязательный шаг.
 
 ## Folder Structure (created incrementally)
 ```
