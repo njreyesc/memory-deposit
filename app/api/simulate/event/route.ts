@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { DEMO_USERS } from "@/lib/auth/demo-users";
+import { isBreadwinner } from "@/lib/auth/current-role";
 
 function makeRequestId(): string {
   // 11-digit numeric id; not cryptographically meaningful — demo only.
@@ -15,7 +15,7 @@ export async function POST() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user || user.id !== DEMO_USERS.alexey.id) {
+  if (!user || !(await isBreadwinner(supabase, user.id))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

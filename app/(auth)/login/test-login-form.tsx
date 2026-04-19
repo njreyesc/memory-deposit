@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
 
 const testLoginSchema = z.object({
   testName: z
@@ -19,6 +20,11 @@ type TestLoginValues = z.infer<typeof testLoginSchema>;
 
 interface TestSessionCreateResponse {
   session_token: string;
+}
+
+interface MockLoginResponse {
+  access_token: string;
+  refresh_token: string;
 }
 
 export default function TestLoginForm() {
@@ -68,6 +74,15 @@ export default function TestLoginForm() {
         setSubmitting(false);
         return;
       }
+
+      const { access_token, refresh_token } =
+        (await loginRes.json()) as MockLoginResponse;
+
+      // Without this, supabase-ssr auth cookies stay unset on the client and
+      // /vault's server component redirects back to /login. Demo login-form
+      // does the same step (login-form.tsx).
+      const supabase = createClient();
+      await supabase.auth.setSession({ access_token, refresh_token });
 
       window.location.assign("/vault");
     } catch {
