@@ -15,7 +15,17 @@ export function LoginHero() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="min-h-screen">
+    <div className="relative min-h-screen">
+      <header className="absolute left-0 right-0 top-0 z-10 px-6 py-6 lg:px-12">
+        <div className="mx-auto flex w-full max-w-6xl items-center gap-2">
+          <span className="text-base font-semibold tracking-tight">
+            Депозит памяти
+          </span>
+          <span className="text-sm text-muted-foreground">
+            · цифровой сейф для семьи
+          </span>
+        </div>
+      </header>
       <div className="mx-auto grid min-h-screen w-full max-w-6xl items-center gap-10 px-6 py-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16 lg:px-12">
         <div className="space-y-6">
           <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
@@ -48,7 +58,7 @@ export function LoginHero() {
               <ArrowRight className="h-4 w-4" />
             </button>
             <p className="text-sm text-muted-foreground">
-              5 минут. Можно прерваться в любой момент.
+              Начните с одного письма. Остальное — когда захотите.
             </p>
           </div>
         </div>
