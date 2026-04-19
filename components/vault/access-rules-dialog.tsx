@@ -285,8 +285,6 @@ export function AccessRulesDialog({
             type="button"
             onClick={handleSave}
             disabled={saving || recipients.length === 0}
-            className="text-white"
-            style={{ backgroundColor: "#21A038" }}
           >
             {saving ? "Сохраняем…" : "Сохранить"}
           </Button>
