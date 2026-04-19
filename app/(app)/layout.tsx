@@ -36,7 +36,7 @@ export default async function AppLayout({
       <aside className="flex w-56 flex-col border-r border-white/10 p-4">
         <div className="mb-8">
           <h2 className="text-lg font-bold tracking-tight">Депозит памяти</h2>
-          <p className="text-xs text-muted-foreground">v0.1 prototype</p>
+          <p className="text-xs text-muted-foreground">для тех, кто рядом</p>
         </div>
         <SidebarNav isBreadwinner={isBreadwinnerUser} />
       </aside>

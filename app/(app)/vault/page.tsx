@@ -70,9 +70,9 @@ async function RecipientVault() {
   if (eventRows.length === 0) {
     return (
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Хранилище</h1>
+        <h1 className="text-2xl font-bold">Пока тихо</h1>
         <div className="mt-6 rounded-lg border border-dashed border-white/10 p-10 text-center text-sm text-muted-foreground">
-          Материалы будут доступны после подтверждения события.
+          Когда придёт время, здесь появится то, что оставил близкий.
         </div>
       </div>
     );
@@ -158,7 +158,7 @@ async function BreadwinnerVault({ userId }: { userId: string }) {
   if (notesRes.error) {
     return (
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Хранилище</h1>
+        <h1 className="text-2xl font-bold">Забота</h1>
         <p className="text-sm text-destructive">
           Не удалось загрузить письма: {notesRes.error.message}
         </p>
@@ -205,9 +205,9 @@ async function BreadwinnerVault({ userId }: { userId: string }) {
         <EventStatusBanner confirmedAt={deliveredTrigger.confirmed_at} />
       )}
       <div>
-        <h1 className="text-2xl font-bold">Хранилище</h1>
+        <h1 className="text-2xl font-bold">Забота</h1>
         <p className="text-sm text-muted-foreground">
-          Видеообращение, письма и заметки для близких
+          Видео, письма и заметки — то, что останется рядом с близкими
         </p>
       </div>
       <VideoSection

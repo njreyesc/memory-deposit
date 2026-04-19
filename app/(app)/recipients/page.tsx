@@ -19,7 +19,7 @@ export default async function RecipientsPage() {
   if (!(await isBreadwinner(supabase, user.id))) {
     return (
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Получатели</h1>
+        <h1 className="text-2xl font-bold">Близкие</h1>
         <div className="mt-6 rounded-lg border border-dashed border-white/10 p-10 text-center text-sm text-muted-foreground">
           Этот раздел доступен только владельцу аккаунта.
         </div>
@@ -36,7 +36,7 @@ export default async function RecipientsPage() {
   if (error) {
     return (
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Получатели</h1>
+        <h1 className="text-2xl font-bold">Близкие</h1>
         <p className="text-sm text-destructive">
           Не удалось загрузить получателей: {error.message}
         </p>
@@ -49,7 +49,7 @@ export default async function RecipientsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Получатели</h1>
+        <h1 className="text-2xl font-bold">Близкие</h1>
         <p className="text-sm text-muted-foreground">
           Кому передать материалы из хранилища после подтверждения события
         </p>
