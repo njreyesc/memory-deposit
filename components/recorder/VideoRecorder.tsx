@@ -42,6 +42,7 @@ export function VideoRecorder({ onSaved, onCancel }: VideoRecorderProps) {
 
   const [state, setState] = useState<RecorderState>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [cameraMissing, setCameraMissing] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(MAX_SECONDS);
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -75,6 +76,7 @@ export function VideoRecorder({ onSaved, onCancel }: VideoRecorderProps) {
 
   async function startRecording() {
     setError(null);
+    setCameraMissing(false);
     setState("requesting");
 
     if (previewUrl) {
@@ -129,6 +131,7 @@ export function VideoRecorder({ onSaved, onCancel }: VideoRecorderProps) {
         );
       } else if (name === "NotFoundError" || name === "OverconstrainedError") {
         setError("Камера не найдена. Подключите камеру и попробуйте снова.");
+        setCameraMissing(true);
       } else {
         setError(
           err instanceof Error ? err.message : "Не удалось запустить запись."
@@ -309,13 +312,13 @@ export function VideoRecorder({ onSaved, onCancel }: VideoRecorderProps) {
             <Button variant="outline" onClick={onCancel}>
               Отмена
             </Button>
-            {isDev && (
+            {(isDev || cameraMissing) && (
               <Button
                 variant="ghost"
                 onClick={handleUseFallback}
                 className="ml-auto text-xs text-muted-foreground"
               >
-                Использовать fallback (dev)
+                {isDev ? "Использовать fallback (dev)" : "Использовать запасное видео"}
               </Button>
             )}
           </div>
