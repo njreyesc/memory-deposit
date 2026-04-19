@@ -1,4 +1,5 @@
 import { LoginForm } from "./login-form";
+import TestLoginForm from "./test-login-form";
 
 export default function LoginPage() {
   return (
@@ -12,7 +13,15 @@ export default function LoginPage() {
             Цифровой сейф для вашей семьи
           </p>
         </div>
-        <LoginForm />
+        <div className="space-y-6">
+          <TestLoginForm />
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">или</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+          <LoginForm />
+        </div>
       </div>
     </div>
   );
