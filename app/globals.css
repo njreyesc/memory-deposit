@@ -83,6 +83,9 @@
   --sidebar-ring: oklch(0.68 0.110 65);
 
   --brand-sber: #21A038;
+
+  --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-source-serif-4), "Georgia", serif;
 }
 
 .dark {
@@ -129,4 +132,16 @@
   html {
     @apply font-sans;
   }
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+.font-pair-on h1,
+.font-pair-on h2,
+.font-pair-on h3 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
