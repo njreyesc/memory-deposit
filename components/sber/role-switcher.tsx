@@ -83,6 +83,9 @@ export function RoleSwitcher({
           setSwitching(false);
           return;
         }
+        const { access_token, refresh_token } = await r.json();
+        const supabase = createClient();
+        await supabase.auth.setSession({ access_token, refresh_token });
         window.location.assign(window.location.pathname);
       } catch (err) {
         console.error("Switch error:", err);

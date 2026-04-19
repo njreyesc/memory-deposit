@@ -50,7 +50,9 @@ export default async function AppLayout({
     if (
       sess &&
       sess.cleaned_up !== true &&
-      new Date(sess.expires_at) > new Date()
+      new Date(sess.expires_at) > new Date() &&
+      (user.id === sess.breadwinner_user_id ||
+        user.id === sess.recipient_user_id)
     ) {
       const { data: testUsers } = await admin
         .from("users")
