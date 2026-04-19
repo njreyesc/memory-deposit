@@ -84,7 +84,7 @@ export default function TestLoginForm() {
       const supabase = createClient();
       await supabase.auth.setSession({ access_token, refresh_token });
 
-      window.location.assign("/vault");
+      window.location.assign("/welcome");
     } catch {
       setServerError("Сетевая ошибка. Попробуйте ещё раз.");
       setSubmitting(false);
