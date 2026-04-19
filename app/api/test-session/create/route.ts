@@ -142,16 +142,6 @@ export async function POST(request: Request) {
       return await fail(`link users: ${usersLink.error.message}`);
     }
 
-    const recipientInsert = await admin.from("recipients").insert({
-      owner_id: alexeyAuthId,
-      full_name: mariaFullName,
-      relation: "wife",
-      user_id: mariaAuthId,
-    });
-    if (recipientInsert.error) {
-      return await fail(`insert recipients: ${recipientInsert.error.message}`);
-    }
-
     const anonClient = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!

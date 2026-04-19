@@ -8,7 +8,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { LoginForm } from "./login-form";
 import TestLoginForm from "./test-login-form";
 
 export function LoginHero() {
@@ -16,34 +15,36 @@ export function LoginHero() {
 
   return (
     <div className="relative min-h-screen">
-      <header className="absolute left-0 right-0 top-0 z-10 px-6 py-6 lg:px-12">
-        <div className="mx-auto flex w-full max-w-6xl items-center gap-2">
-          <span className="text-base font-semibold tracking-tight">
-            Депозит памяти
-          </span>
-          <span className="text-sm text-muted-foreground">
-            · цифровой сейф для семьи
-          </span>
-        </div>
-      </header>
       <div className="mx-auto grid min-h-screen w-full max-w-6xl items-center gap-10 px-6 py-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16 lg:px-12">
         <div className="space-y-6">
           <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
             Спокойно. Никуда не торопимся.
           </p>
-          <h1
-            className="font-heading text-4xl font-medium leading-[1.1] tracking-tight sm:text-[3.25rem]"
-            style={{ fontFamily: "var(--font-source-serif-4), Georgia, serif" }}
-          >
-            <span>Важное — </span>
-            <em
-              className="font-normal italic"
-              style={{ color: "var(--primary)" }}
+          <div className="space-y-3">
+            <h1
+              className="font-heading text-4xl font-medium leading-[1.05] tracking-tight sm:text-[3.25rem]"
+              style={{
+                fontFamily: "var(--font-source-serif-4), Georgia, serif",
+              }}
             >
-              тем, кто дорог
-            </em>
-            <span>.</span>
-          </h1>
+              Депозит памяти
+            </h1>
+            <p
+              className="text-lg leading-snug sm:text-xl"
+              style={{
+                fontFamily: "var(--font-source-serif-4), Georgia, serif",
+              }}
+            >
+              <span className="text-muted-foreground">Важное — </span>
+              <em
+                className="font-normal italic"
+                style={{ color: "var(--primary)" }}
+              >
+                тем, кто дорог
+              </em>
+              <span className="text-muted-foreground">.</span>
+            </p>
+          </div>
           <p className="max-w-md text-base leading-relaxed text-muted-foreground">
             Тихое место, где важное собрано в одном месте — чтобы семья всегда
             знала, где что лежит.
@@ -76,14 +77,8 @@ export function LoginHero() {
               Цифровой сейф для вашей семьи
             </p>
           </DialogHeader>
-          <div className="space-y-6 pt-2">
+          <div className="pt-2">
             <TestLoginForm />
-            <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-xs text-muted-foreground">или</span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
-            <LoginForm />
           </div>
         </DialogContent>
       </Dialog>
