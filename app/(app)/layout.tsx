@@ -5,6 +5,12 @@ import { resolveTestSession } from "@/lib/auth/test-session";
 import { RoleSwitcher } from "@/components/sber/role-switcher";
 import { SidebarNav } from "@/components/sber/sidebar-nav";
 
+interface RecipientEventRow {
+  owner_id: string;
+  owner_full_name: string;
+  confirmed_at: string;
+}
+
 export default async function AppLayout({
   children,
 }: {
@@ -21,6 +27,13 @@ export default async function AppLayout({
 
   const isBreadwinnerUser = await isBreadwinner(supabase, user.id);
 
+  let silentRecipientMode = false;
+  if (!isBreadwinnerUser) {
+    const eventRes = await supabase.rpc("recipient_event_status");
+    const eventRows = (eventRes.data ?? []) as RecipientEventRow[];
+    silentRecipientMode = eventRows.length > 0;
+  }
+
   // Update last_seen_at (fire-and-forget)
   supabase
     .from("users")
@@ -29,6 +42,17 @@ export default async function AppLayout({
     .then();
 
   const testSession = await resolveTestSession(user.id);
+
+  if (silentRecipientMode) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <header className="flex items-center justify-end px-6 py-3">
+          <RoleSwitcher currentUserId={user.id} testSession={testSession} />
+        </header>
+        <main className="flex-1 p-6">{children}</main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen">
