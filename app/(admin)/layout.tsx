@@ -32,7 +32,7 @@ export default async function AdminLayout({
           <h2 className="text-lg font-bold tracking-tight">Депозит памяти</h2>
           <p className="text-xs text-muted-foreground">v0.1 prototype</p>
         </div>
-        <SidebarNav isBreadwinner={true} />
+        <SidebarNav />
       </aside>
 
       <div className="flex flex-1 flex-col">

@@ -298,6 +298,7 @@ export function LettersCapsules({
 
       {tab === "letters" ? (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <div className="space-y-4">
           <ul className="space-y-4">
             {notes.length === 0 ? (
               <EmptyLetterCard onStart={() => openCreate()} />
@@ -384,6 +385,16 @@ export function LettersCapsules({
             )}
           </ul>
 
+          <button
+            type="button"
+            onClick={() => openCreate()}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-foreground px-6 py-4 text-sm font-medium text-background transition hover:opacity-90"
+          >
+            <Plus className="h-4 w-4" />
+            Новое письмо
+          </button>
+          </div>
+
           <aside className="h-fit space-y-4 rounded-2xl border border-border bg-card p-5">
             <div className="space-y-2">
               <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
@@ -425,17 +436,6 @@ export function LettersCapsules({
           onEditRules={() => setVideoRulesOpen(true)}
           onDelete={handleVideoDelete}
         />
-      )}
-
-      {tab === "letters" && (
-        <button
-          type="button"
-          onClick={() => openCreate()}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-foreground px-6 py-4 text-sm font-medium text-background transition hover:opacity-90"
-        >
-          <Plus className="h-4 w-4" />
-          Новое письмо
-        </button>
       )}
 
       <Dialog open={editorOpen} onOpenChange={setEditorOpen}>

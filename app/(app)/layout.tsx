@@ -62,7 +62,7 @@ export default async function AppLayout({
           <h2 className="text-lg font-bold tracking-tight">Депозит памяти</h2>
           <p className="text-xs text-muted-foreground">для тех, кто рядом</p>
         </div>
-        <SidebarNav isBreadwinner={isBreadwinnerUser} />
+        <SidebarNav />
       </aside>
 
       {/* Main */}

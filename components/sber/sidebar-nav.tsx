@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FlaskConical, HeartHandshake, Users2 } from "lucide-react";
+import { HeartHandshake, Users2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -10,21 +10,12 @@ const NAV_ITEMS = [
   { href: "/recipients", label: "Близкие", icon: Users2 },
 ];
 
-const ADMIN_NAV_ITEMS = [
-  { href: "/simulate", label: "Демо-режим", icon: FlaskConical },
-];
-
-interface SidebarNavProps {
-  isBreadwinner?: boolean;
-}
-
-export function SidebarNav({ isBreadwinner = false }: SidebarNavProps) {
+export function SidebarNav() {
   const pathname = usePathname();
-  const items = isBreadwinner ? [...NAV_ITEMS, ...ADMIN_NAV_ITEMS] : NAV_ITEMS;
 
   return (
     <nav className="flex flex-col gap-1">
-      {items.map(({ href, label, icon: Icon }) => {
+      {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
         const active = pathname === href || pathname.startsWith(`${href}/`);
         return (
           <Link
