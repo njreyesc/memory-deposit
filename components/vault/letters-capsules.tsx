@@ -612,9 +612,9 @@ function EmptyLetterCard({ onStart }: { onStart: () => void }) {
         своё.
       </p>
       <Button
-        variant="outline"
         size="sm"
-        className="mt-4 rounded-full"
+        className="mt-4 gap-2 rounded-full px-5 text-white"
+        style={{ backgroundColor: "#21A038" }}
         onClick={onStart}
       >
         <Plus className="h-3.5 w-3.5" />
