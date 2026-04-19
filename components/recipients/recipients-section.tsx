@@ -297,12 +297,7 @@ export function RecipientsSection({
               >
                 Отмена
               </Button>
-              <Button
-                type="submit"
-                disabled={saving}
-                className="text-white"
-                style={{ backgroundColor: "#21A038" }}
-              >
+              <Button type="submit" disabled={saving}>
                 {saving ? "Сохраняем…" : "Сохранить"}
               </Button>
             </div>

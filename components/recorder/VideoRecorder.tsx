@@ -359,12 +359,7 @@ export function VideoRecorder({ onSaved, onCancel }: VideoRecorderProps) {
           />
           {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="flex flex-wrap gap-2">
-            <Button
-              onClick={handleSave}
-              disabled={state === "saving"}
-              className="text-white"
-              style={{ backgroundColor: "#21A038" }}
-            >
+            <Button onClick={handleSave} disabled={state === "saving"}>
               {state === "saving" ? "Сохраняем…" : "Сохранить"}
             </Button>
             <Button
