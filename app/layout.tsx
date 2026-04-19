@@ -18,11 +18,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru" className={`${montserrat.variable} dark h-full antialiased`}>
-      <body
-        className="min-h-full flex flex-col"
-        style={{ backgroundColor: "#0A1628", color: "#ffffff" }}
-      >
+    <html lang="ru" className={`${montserrat.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col">
         {children}
       </body>
     </html>
