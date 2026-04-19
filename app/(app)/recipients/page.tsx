@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { DEMO_USERS } from "@/lib/auth/demo-users";
+import { isBreadwinner } from "@/lib/auth/current-role";
 import {
   RecipientsSection,
   type Recipient,
@@ -16,9 +16,7 @@ export default async function RecipientsPage() {
     redirect("/login");
   }
 
-  const isAlexey = user.id === DEMO_USERS.alexey.id;
-
-  if (!isAlexey) {
+  if (!(await isBreadwinner(supabase, user.id))) {
     return (
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Получатели</h1>

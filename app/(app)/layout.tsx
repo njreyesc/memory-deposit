@@ -1,12 +1,8 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { DEMO_USERS } from "@/lib/auth/demo-users";
-import {
-  RoleSwitcher,
-  type TestSessionInfo,
-} from "@/components/sber/role-switcher";
+import { isBreadwinner } from "@/lib/auth/current-role";
+import { resolveTestSession } from "@/lib/auth/test-session";
+import { RoleSwitcher } from "@/components/sber/role-switcher";
 import { SidebarNav } from "@/components/sber/sidebar-nav";
 
 export default async function AppLayout({
@@ -23,7 +19,7 @@ export default async function AppLayout({
     redirect("/login");
   }
 
-  const isBreadwinner = user.id === DEMO_USERS.alexey.id;
+  const isBreadwinnerUser = await isBreadwinner(supabase, user.id);
 
   // Update last_seen_at (fire-and-forget)
   supabase
@@ -32,46 +28,7 @@ export default async function AppLayout({
     .eq("id", user.id)
     .then();
 
-  // Test-session lookup for role-switcher labeling. Service-role client is
-  // required — RLS on test_sessions allows only service_role (see 0007).
-  // Failures collapse to undefined, which makes the switcher fall back to
-  // DEMO_USERS labels; we don't throw on a stale/cleaned-up/expired cookie.
-  const cookieStore = await cookies();
-  const testSessionToken = cookieStore.get("test_session_token")?.value;
-  let testSession: TestSessionInfo | undefined;
-  if (testSessionToken) {
-    const admin = createAdminClient();
-    const { data: sess } = await admin
-      .from("test_sessions")
-      .select("breadwinner_user_id, recipient_user_id, cleaned_up, expires_at")
-      .eq("session_token", testSessionToken)
-      .maybeSingle();
-
-    if (
-      sess &&
-      sess.cleaned_up !== true &&
-      new Date(sess.expires_at) > new Date() &&
-      (user.id === sess.breadwinner_user_id ||
-        user.id === sess.recipient_user_id)
-    ) {
-      const { data: testUsers } = await admin
-        .from("users")
-        .select("id, full_name")
-        .in("id", [sess.breadwinner_user_id, sess.recipient_user_id]);
-
-      const b = testUsers?.find((u) => u.id === sess.breadwinner_user_id);
-      const m = testUsers?.find((u) => u.id === sess.recipient_user_id);
-      if (b && m) {
-        testSession = {
-          token: testSessionToken,
-          breadwinnerUserId: sess.breadwinner_user_id,
-          recipientUserId: sess.recipient_user_id,
-          breadwinnerName: b.full_name,
-          recipientName: m.full_name,
-        };
-      }
-    }
-  }
+  const testSession = await resolveTestSession(user.id);
 
   return (
     <div className="flex min-h-screen">
@@ -81,7 +38,7 @@ export default async function AppLayout({
           <h2 className="text-lg font-bold tracking-tight">Депозит памяти</h2>
           <p className="text-xs text-muted-foreground">v0.1 prototype</p>
         </div>
-        <SidebarNav isBreadwinner={isBreadwinner} />
+        <SidebarNav isBreadwinner={isBreadwinnerUser} />
       </aside>
 
       {/* Main */}

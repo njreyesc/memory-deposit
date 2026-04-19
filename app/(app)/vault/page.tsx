@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { DEMO_USERS } from "@/lib/auth/demo-users";
+import { isBreadwinner } from "@/lib/auth/current-role";
 import { NotesSection, type Note } from "@/components/vault/notes-section";
 import {
   VideoSection,
@@ -51,9 +51,7 @@ export default async function VaultPage() {
     redirect("/login");
   }
 
-  const isAlexey = user.id === DEMO_USERS.alexey.id;
-
-  if (!isAlexey) {
+  if (!(await isBreadwinner(supabase, user.id))) {
     return <RecipientVault />;
   }
 

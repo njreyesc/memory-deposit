@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { DEMO_USERS } from "@/lib/auth/demo-users";
+import { isBreadwinner } from "@/lib/auth/current-role";
+import { resolveTestSession } from "@/lib/auth/test-session";
 import { RoleSwitcher } from "@/components/sber/role-switcher";
 import { SidebarNav } from "@/components/sber/sidebar-nav";
 
@@ -18,9 +19,11 @@ export default async function AdminLayout({
     redirect("/login");
   }
 
-  if (user.id !== DEMO_USERS.alexey.id) {
+  if (!(await isBreadwinner(supabase, user.id))) {
     redirect("/vault");
   }
+
+  const testSession = await resolveTestSession(user.id);
 
   return (
     <div className="flex min-h-screen">
@@ -34,7 +37,7 @@ export default async function AdminLayout({
 
       <div className="flex flex-1 flex-col">
         <header className="flex items-center justify-end border-b border-white/10 px-6 py-3">
-          <RoleSwitcher currentUserId={user.id} />
+          <RoleSwitcher currentUserId={user.id} testSession={testSession} />
         </header>
         <main className="flex-1 p-6">{children}</main>
       </div>
