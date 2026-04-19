@@ -35,7 +35,7 @@ export async function POST(request: Request) {
   const sessionToken = `test_${sessionId}`;
   const alexeyEmail = `test-${sessionId}-alexey@test.local`;
   const mariaEmail = `test-${sessionId}-maria@test.local`;
-  const alexeyFullName = "Алексей Иванов";
+  const alexeyFullName = testName;
   const mariaFullName = "Мария Иванова";
 
   const admin = createAdminClient();
