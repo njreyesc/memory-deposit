@@ -69,7 +69,7 @@ export default async function SimulatePage() {
           <Counter label="Триггеров" value={stats.activeTriggers} />
         </div>
         {stats.deliveredTrigger && (
-          <p className="mt-4 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+          <p className="mt-4 rounded-md border border-border bg-background/40 px-3 py-2 text-xs text-muted-foreground">
             Событие уже подтверждено. Сбросьте демо для нового сценария.
           </p>
         )}

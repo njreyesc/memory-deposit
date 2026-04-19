@@ -2,12 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { HeartHandshake, Users2 } from "lucide-react";
+import { HeartHandshake, PlayCircle, Users2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/vault", label: "Забота", icon: HeartHandshake },
   { href: "/recipients", label: "Близкие", icon: Users2 },
+  {
+    href: "/simulate",
+    label: "Показать, как это будет работать",
+    icon: PlayCircle,
+  },
 ];
 
 export function SidebarNav() {
