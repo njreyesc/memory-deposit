@@ -2,17 +2,14 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isBreadwinner } from "@/lib/auth/current-role";
-import { NotesSection, type Note } from "@/components/vault/notes-section";
-import {
-  VideoSection,
-  type VideoItem,
-} from "@/components/vault/video-section";
+import type { Note } from "@/components/vault/notes-section";
+import type { VideoItem } from "@/components/vault/video-section";
 import type {
   AccessRule,
   Recipient,
 } from "@/components/vault/access-rules-dialog";
 import { EventStatusBanner } from "@/components/vault/event-status-banner";
-import { CareSummary } from "@/components/vault/care-summary";
+import { LettersCapsules } from "@/components/vault/letters-capsules";
 import {
   RecipientView,
   type RecipientMaterial,
@@ -124,7 +121,7 @@ async function RecipientVault() {
 async function BreadwinnerVault({ userId }: { userId: string }) {
   const supabase = await createClient();
 
-  const [notesRes, videoRes, recipientsRes, rulesRes, triggerRes, userRes] =
+  const [notesRes, videoRes, recipientsRes, rulesRes, triggerRes] =
     await Promise.all([
       supabase
         .from("vault_items")
@@ -153,11 +150,6 @@ async function BreadwinnerVault({ userId }: { userId: string }) {
         .eq("status", "delivered")
         .order("confirmed_at", { ascending: false })
         .limit(1)
-        .maybeSingle(),
-      supabase
-        .from("users")
-        .select("full_name")
-        .eq("id", userId)
         .maybeSingle(),
     ]);
 
@@ -205,36 +197,18 @@ async function BreadwinnerVault({ userId }: { userId: string }) {
 
   const videoRules = initialVideo ? rulesByItem[initialVideo.id] ?? [] : [];
 
-  const userRow = userRes.data as { full_name: string | null } | null;
-  const firstName = (userRow?.full_name ?? "").split(/\s+/)[0] || "друг";
-
   return (
-    <div className="space-y-8">
+    <div className="mx-auto max-w-5xl space-y-8">
       {deliveredTrigger?.confirmed_at && (
         <EventStatusBanner confirmedAt={deliveredTrigger.confirmed_at} />
       )}
-      <div>
-        <h1 className="text-2xl font-bold">Забота</h1>
-        <p className="text-sm text-muted-foreground">
-          Видео, письма и заметки — то, что останется рядом с близкими
-        </p>
-      </div>
-      <CareSummary
-        firstName={firstName}
-        notesCount={notes.length}
-        hasVideo={initialVideo !== null}
-        recipientsCount={recipients.length}
-      />
-      <VideoSection
-        initialVideo={initialVideo}
-        recipients={recipients}
-        initialRules={videoRules}
-      />
-      <NotesSection
+      <LettersCapsules
         ownerId={userId}
         initialNotes={notes}
+        initialVideo={initialVideo}
         recipients={recipients}
         initialRulesByItem={rulesByItem}
+        initialVideoRules={videoRules}
       />
     </div>
   );
