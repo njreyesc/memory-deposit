@@ -37,7 +37,6 @@ type QueuedEvent = {
 const LS_SID = "md.telemetry.sid";
 const LS_LAST = "md.telemetry.last";
 const LS_EVER = "md.telemetry.everSeen";
-const LS_STARTED_SID = "md.telemetry.startedSid";
 const SESSION_IDLE_MS = 30 * 60 * 1000;
 const FLUSH_DEBOUNCE_MS = 1500;
 const FLUSH_BATCH_SIZE = 10;
@@ -75,20 +74,20 @@ export function getSessionId(): string {
   const fresh = randomId();
   localStorage.setItem(LS_SID, fresh);
   localStorage.setItem(LS_LAST, String(now));
-  localStorage.removeItem(LS_STARTED_SID);
   sessionStartEmitted = false;
   return fresh;
 }
 
 function ensureSessionStart(): void {
+  // Эмитим session_start один раз за загрузку страницы. Если юзер перезагрузил
+  // страницу внутри той же сессии — событие отправится повторно, но в SQL-воронке
+  // считаем COUNT(DISTINCT session_id), поэтому дубли не портят метрику.
+  // LS-дедуп убран сознательно: раньше он ставил флаг ДО успешного flush и
+  // терял session_start при уходе со страницы, из-за чего sessions с scene_enter
+  // были без парного session_start и воронка показывала >100%.
   if (sessionStartEmitted) return;
   sessionStartEmitted = true;
   const sid = getSessionId();
-  if (isBrowser()) {
-    const startedFor = localStorage.getItem(LS_STARTED_SID);
-    if (startedFor === sid) return;
-    localStorage.setItem(LS_STARTED_SID, sid);
-  }
   const everSeen = isBrowser() && localStorage.getItem(LS_EVER) === "1";
   if (isBrowser()) localStorage.setItem(LS_EVER, "1");
   enqueue({
