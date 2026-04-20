@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { SceneTracker } from "@/components/telemetry/scene-tracker";
+import { track } from "@/lib/telemetry/client";
 
 interface WelcomeFlowProps {
   firstName: string;
@@ -14,6 +16,8 @@ interface WelcomeFlowProps {
 type Step = "hello" | "write" | "saving";
 
 const MIN_TEXT_LENGTH = 10;
+const TEXT_EVENT_THROTTLE_MS = 10_000;
+const PAUSE_THRESHOLD_MS = 5_000;
 
 export function WelcomeFlow({ firstName, userId }: WelcomeFlowProps) {
   const router = useRouter();
@@ -21,6 +25,43 @@ export function WelcomeFlow({ firstName, userId }: WelcomeFlowProps) {
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
+
+  const startedAtRef = useRef<number>(Date.now());
+  const lastKeyAtRef = useRef<number>(0);
+  const lastEventAtRef = useRef<number>(0);
+  const pausesRef = useRef<number>(0);
+  const completedRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    startedAtRef.current = Date.now();
+    track("onboarding_started", { framing: "letter" }, "onboarding");
+    return () => {
+      if (completedRef.current) return;
+      track(
+        "onboarding_abandoned",
+        { lastStep: step, length: text.trim().length },
+        "onboarding"
+      );
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function handleChange(value: string) {
+    setText(value);
+    const now = Date.now();
+    if (lastKeyAtRef.current > 0 && now - lastKeyAtRef.current > PAUSE_THRESHOLD_MS) {
+      pausesRef.current += 1;
+    }
+    lastKeyAtRef.current = now;
+    if (now - lastEventAtRef.current >= TEXT_EVENT_THROTTLE_MS) {
+      lastEventAtRef.current = now;
+      track(
+        "onboarding_name_entered",
+        { length: value.length, pausesOver5s: pausesRef.current },
+        "onboarding"
+      );
+    }
+  }
 
   function goToVault(withWelcomeFlag: boolean) {
     startTransition(() => {
@@ -49,11 +90,22 @@ export function WelcomeFlow({ firstName, userId }: WelcomeFlowProps) {
       return;
     }
 
+    completedRef.current = true;
+    track(
+      "onboarding_completed",
+      {
+        letterLength: body.length,
+        totalMs: Date.now() - startedAtRef.current,
+        pauses: pausesRef.current,
+      },
+      "onboarding"
+    );
     goToVault(true);
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center p-6">
+      <SceneTracker scene="onboarding" />
       <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-sm">
         {step === "hello" && (
           <div className="space-y-5">
@@ -95,7 +147,7 @@ export function WelcomeFlow({ firstName, userId }: WelcomeFlowProps) {
               autoFocus
               rows={7}
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={(e) => handleChange(e.target.value)}
               placeholder="Можно одним абзацем. Это черновик — его можно переписать потом."
               className="w-full resize-none rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
@@ -104,7 +156,19 @@ export function WelcomeFlow({ firstName, userId }: WelcomeFlowProps) {
               <Button
                 variant="ghost"
                 size="lg"
-                onClick={() => goToVault(false)}
+                onClick={() => {
+                  completedRef.current = true;
+                  track(
+                    "onboarding_abandoned",
+                    {
+                      lastStep: "write",
+                      length: text.trim().length,
+                      totalMs: Date.now() - startedAtRef.current,
+                    },
+                    "onboarding"
+                  );
+                  goToVault(false);
+                }}
               >
                 Пропустить
               </Button>

@@ -5,6 +5,7 @@ import {
   RecipientsSection,
   type Recipient,
 } from "@/components/recipients/recipients-section";
+import { SceneTracker } from "@/components/telemetry/scene-tracker";
 
 export default async function RecipientsPage() {
   const supabase = await createClient();
@@ -48,6 +49,7 @@ export default async function RecipientsPage() {
 
   return (
     <div className="space-y-8">
+      <SceneTracker scene="recipients" />
       <div>
         <h1 className="text-2xl font-bold">Близкие</h1>
         <p className="text-sm text-muted-foreground">

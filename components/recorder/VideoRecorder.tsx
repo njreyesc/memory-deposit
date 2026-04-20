@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Circle, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { track } from "@/lib/telemetry/client";
 
 const BUCKET = "videos";
 const MAX_BYTES = 20 * 1024 * 1024;
@@ -46,6 +47,7 @@ export function VideoRecorder({ onSaved, onCancel }: VideoRecorderProps) {
   const [secondsLeft, setSecondsLeft] = useState(MAX_SECONDS);
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const recordingStartedAtRef = useRef<number>(0);
 
   useEffect(() => {
     return () => {
@@ -118,9 +120,19 @@ export function VideoRecorder({ onSaved, onCancel }: VideoRecorderProps) {
         setRecordedBlob(blob);
         setPreviewUrl(url);
         setState("preview");
+        const durationSec = recordingStartedAtRef.current
+          ? Math.round((Date.now() - recordingStartedAtRef.current) / 1000)
+          : 0;
+        track(
+          "video_recording_stopped",
+          { durationSec, bytes: blob.size },
+          "vault"
+        );
       };
 
       recorder.start();
+      recordingStartedAtRef.current = Date.now();
+      track("video_recording_started", {}, "vault");
       setSecondsLeft(MAX_SECONDS);
       setState("recording");
     } catch (err) {
@@ -251,6 +263,12 @@ export function VideoRecorder({ onSaved, onCancel }: VideoRecorderProps) {
           `Не удалось получить ссылку: ${signError?.message ?? "unknown"}`
         );
       }
+
+      track(
+        "video_sealed",
+        { bytes: blob.size, type: blob.type || "video/webm" },
+        "vault"
+      );
 
       onSaved({
         id: rowId,

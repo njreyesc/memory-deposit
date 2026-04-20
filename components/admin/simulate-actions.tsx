@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { RefreshCw, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { track } from "@/lib/telemetry/client";
 
 interface SimulateActionsProps {
   alreadyDelivered: boolean;
@@ -66,6 +67,11 @@ export function SimulateActions({
         return;
       }
       setRequestId(body.request_id);
+      track(
+        "trigger_simulated",
+        { eventType: "zags", requestId: body.request_id },
+        "simulate"
+      );
       setEventState("done");
     } catch (err) {
       setEventError(err instanceof Error ? err.message : "Неизвестная ошибка");

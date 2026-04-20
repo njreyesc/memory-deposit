@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { track } from "@/lib/telemetry/client";
 import {
   ArrowRight,
   Lock,
@@ -133,10 +134,58 @@ export function LettersCapsules({
     defaultValues: { title: "", content: "" },
   });
 
+  const editorStartedAtRef = useRef<number>(0);
+  const editorLastKeyAtRef = useRef<number>(0);
+  const editorLastEventAtRef = useRef<number>(0);
+  const editorPausesRef = useRef<number>(0);
+  const editorSavedRef = useRef<boolean>(false);
+
+  function resetEditorTracking() {
+    editorStartedAtRef.current = Date.now();
+    editorLastKeyAtRef.current = 0;
+    editorLastEventAtRef.current = 0;
+    editorPausesRef.current = 0;
+    editorSavedRef.current = false;
+  }
+
+  useEffect(() => {
+    if (!editorOpen) return;
+    const sub = form.watch((values, info) => {
+      if (info.name !== "content") return;
+      const now = Date.now();
+      const length = values.content?.length ?? 0;
+      if (
+        editorLastKeyAtRef.current > 0 &&
+        now - editorLastKeyAtRef.current > 5000
+      ) {
+        editorPausesRef.current += 1;
+      }
+      editorLastKeyAtRef.current = now;
+      if (now - editorLastEventAtRef.current >= 10_000) {
+        editorLastEventAtRef.current = now;
+        track(
+          "letter_text_input",
+          { length, pausesOver5s: editorPausesRef.current },
+          "vault"
+        );
+      }
+    });
+    return () => sub.unsubscribe();
+  }, [editorOpen, form]);
+
   function openCreate(titleSeed?: string) {
     setEditingId(null);
     setError(null);
     form.reset({ title: titleSeed ?? "", content: "" });
+    resetEditorTracking();
+    track(
+      "letter_started",
+      { from: titleSeed ? "prompt" : "new_button" },
+      "vault"
+    );
+    if (titleSeed) {
+      track("letter_prompt_used", { prompt: titleSeed }, "vault");
+    }
     setEditorOpen(true);
   }
 
@@ -144,7 +193,25 @@ export function LettersCapsules({
     setEditingId(note.id);
     setError(null);
     form.reset({ title: note.title, content: note.content });
+    resetEditorTracking();
+    track("letter_started", { from: "existing" }, "vault");
     setEditorOpen(true);
+  }
+
+  function handleEditorOpenChange(next: boolean) {
+    if (!next && editorOpen && !editorSavedRef.current) {
+      const length = form.getValues("content")?.length ?? 0;
+      track(
+        "letter_abandoned",
+        {
+          length,
+          totalMs: Date.now() - editorStartedAtRef.current,
+          pauses: editorPausesRef.current,
+        },
+        "vault"
+      );
+    }
+    setEditorOpen(next);
   }
 
   async function onSubmit(values: NoteForm) {
@@ -196,6 +263,19 @@ export function LettersCapsules({
       }
     }
 
+    editorSavedRef.current = true;
+    track(
+      "letter_saved",
+      {
+        as: "draft",
+        length: values.content.length,
+        totalMs: Date.now() - editorStartedAtRef.current,
+        pauses: editorPausesRef.current,
+        mode: editingId ? "edit" : "create",
+      },
+      "vault"
+    );
+
     setSaving(false);
     setEditorOpen(false);
   }
@@ -220,11 +300,17 @@ export function LettersCapsules({
       delete next[id];
       return next;
     });
+    editorSavedRef.current = true;
+    track("letter_deleted", {}, "vault");
     setEditorOpen(false);
   }
 
   function handleRulesSaved(noteId: string, newRules: AccessRule[]) {
+    const prevRules = rulesByItem[noteId] ?? [];
     setRulesByItem((prev) => ({ ...prev, [noteId]: newRules }));
+    if (prevRules.length === 0 && newRules.length > 0) {
+      track("letter_sealed", { rules: newRules.length }, "vault");
+    }
   }
 
   async function handleVideoSaved(saved: SavedVideo) {
@@ -438,7 +524,7 @@ export function LettersCapsules({
         />
       )}
 
-      <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
+      <Dialog open={editorOpen} onOpenChange={handleEditorOpenChange}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
@@ -511,7 +597,7 @@ export function LettersCapsules({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setEditorOpen(false)}
+                  onClick={() => handleEditorOpenChange(false)}
                   disabled={saving}
                 >
                   Отмена

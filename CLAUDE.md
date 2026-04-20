@@ -17,7 +17,7 @@ Sber top management, SberDisk product team, CISO. Scenario: a click-through tour
 
 ## Tech Stack (do not change without my explicit permission)
 - Next.js 14 App Router + TypeScript (strict mode)
-- Tailwind + shadcn/ui (slate theme, dark mode by default)
+- Tailwind + shadcn/ui
 - Supabase (auth, Postgres, storage, RLS)
 - Zustand for global state
 - react-hook-form + zod for forms
@@ -26,10 +26,11 @@ Sber top management, SberDisk product team, CISO. Scenario: a click-through tour
 - lucide-react for icons
 
 ## Branding
-- Accent color: #21A038 (Sber green)
-- Background: #0A1628 (dark navigation)
-- Font: Montserrat via next/font
-- Interface: always dark theme
+- Sber green accent: #21A038, exposed as CSS variable `--brand-sber`.
+- Palette: warm paper — background `oklch(0.95 0.012 80)`, card `oklch(0.97 0.010 80)`, primary ochre `oklch(0.68 0.110 65)`. Defined in [app/globals.css](app/globals.css) under `:root`.
+- `/admin/telemetry` uses an extended paper palette (`.telemetry-paper` in globals.css) — mirrors the dashboard mockup with moss for the funnel starting step and ember for drop-off.
+- Fonts via `next/font`: Inter Tight for UI (`--font-sans`), Source Serif 4 for headings (`--font-heading`). Use `font-heading` utility for H1/H2 inside cards.
+- Dark mode exists (`.dark` selector in globals.css) but the app is NOT forced dark — the root `<html>` has no `dark` class. Do not re-introduce a blanket dark-theme rule.
 
 ## Key Architectural Principles
 1. **Zero-knowledge for documents**: the server never sees decrypted files. Encryption happens in the browser via Web Crypto; the key is derived from the user's master password (PBKDF2, 100k iterations, SHA-256); the key itself never leaves the client.
