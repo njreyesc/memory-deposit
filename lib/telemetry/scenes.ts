@@ -3,7 +3,8 @@ export type SceneId =
   | "vault"
   | "recipients"
   | "finance"
-  | "simulate";
+  | "simulate"
+  | "assistant";
 
 export const SCENE_LABELS: Record<SceneId, string> = {
   onboarding: "Онбординг",
@@ -11,4 +12,5 @@ export const SCENE_LABELS: Record<SceneId, string> = {
   recipients: "Близкие",
   finance: "Финансовая карта",
   simulate: "Симуляция события",
+  assistant: "Ассистент",
 };

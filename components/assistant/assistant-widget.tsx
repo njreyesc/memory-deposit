@@ -41,6 +41,10 @@ const QUICK_QUESTIONS: Record<Scene, string[]> = {
     "Как подтверждается событие через ЗАГС?",
     "Можно ли отменить триггер?",
   ],
+  // Ассистент как «сцена» существует только для телеметрии (scene_enter /
+  // scene_leave на открытие/закрытие панели) — на страницу /assistant
+  // usePathname никогда не попадёт, поэтому этот набор не рендерится.
+  assistant: [],
   default: [
     "Какие документы важнее всего?",
     "Как сохранить финансовые активы для семьи?",
@@ -79,6 +83,11 @@ export function AssistantWidget({ userId }: AssistantWidgetProps) {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const hasMessages = messages.length > 0;
 
+  // Время "в ассистенте" считается как пара scene_enter/scene_leave с
+  // scene="assistant". Ref хранит момент открытия, чтобы на unmount/закрытие
+  // посчитать msSpent и не потерять событие при навигации прочь.
+  const openedAtRef = useRef<number | null>(null);
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem(storageKey);
@@ -104,14 +113,33 @@ export function AssistantWidget({ userId }: AssistantWidgetProps) {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, open, thinking]);
 
+  // Если панель осталась открытой, а пользователь ушёл со страницы —
+  // при размонтировании всё равно эмитим scene_leave, чтобы msSpent не потерялся.
+  useEffect(() => {
+    return () => {
+      if (openedAtRef.current !== null) {
+        const msSpent = Date.now() - openedAtRef.current;
+        track("scene_leave", { msSpent }, "assistant");
+        openedAtRef.current = null;
+      }
+    };
+  }, []);
+
   function openPanel() {
-    if (!open) {
-      track("ai_opened", { scene });
-    }
+    if (open) return;
+    track("ai_opened", { scene });
+    openedAtRef.current = Date.now();
+    track("scene_enter", { fromScene: scene }, "assistant");
     setOpen(true);
   }
 
   function closePanel() {
+    if (!open) return;
+    if (openedAtRef.current !== null) {
+      const msSpent = Date.now() - openedAtRef.current;
+      track("scene_leave", { msSpent }, "assistant");
+      openedAtRef.current = null;
+    }
     setOpen(false);
   }
 

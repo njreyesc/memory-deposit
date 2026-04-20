@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   TelemetryDashboard,
+  type ExtraMilestone,
   type FunnelStep,
   type SceneStat,
   type SessionRow,
@@ -81,6 +82,8 @@ export default async function TelemetryPage() {
   let onboardingCompleted = 0;
   const onboardingEnterSessions = new Set<string>();
   const onboardingCompletedSessions = new Set<string>();
+  const financeSessions = new Set<string>();
+  const assistantSessions = new Set<string>();
 
   for (const row of raw) {
     const ts = new Date(row.created_at).getTime();
@@ -114,6 +117,12 @@ export default async function TelemetryPage() {
         onboardingCompleted += 1;
       }
     }
+    if (row.event_name === "scene_enter" && row.scene === "finance") {
+      financeSessions.add(row.session_id);
+    }
+    if (row.event_name === "ai_opened") {
+      assistantSessions.add(row.session_id);
+    }
   }
 
   const sessions: SessionRow[] = Array.from(sessionsMap.values())
@@ -145,6 +154,19 @@ export default async function TelemetryPage() {
     onboardingCompleted,
     avgSessionMs,
   };
+
+  const extras: ExtraMilestone[] = [
+    {
+      key: "finance_opened",
+      label: "Открыл финансовую карту",
+      sessions: financeSessions.size,
+    },
+    {
+      key: "assistant_opened",
+      label: "Открыл ассистента",
+      sessions: assistantSessions.size,
+    },
+  ];
 
   const exportRows: TelemetryRowExport[] = raw.map((r) => ({
     id: r.id,
@@ -185,6 +207,7 @@ export default async function TelemetryPage() {
         <TelemetryDashboard
           kpis={kpis}
           funnel={funnel}
+          extras={extras}
           sceneTime={sceneTime}
           topEvents={topEvents}
           sessions={sessions}
