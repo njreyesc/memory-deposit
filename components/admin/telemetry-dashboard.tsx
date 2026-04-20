@@ -42,6 +42,7 @@ const STEP_LABELS: Record<string, string> = {
   onboarding_completed: "Завершил онбординг",
   vault_enter: "Дошёл до vault",
   letter_saved: "Сохранил письмо",
+  video_sealed: "Сохранил видео",
   finance_opened: "Открыл финансовую карту",
   assistant_opened: "Открыл ассистента",
   trigger_simulated: "Подтвердил событие",
