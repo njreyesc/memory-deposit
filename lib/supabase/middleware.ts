@@ -31,8 +31,11 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Not logged in and not on login page → redirect to login
-  if (!user && pathname !== "/login") {
+  // Public paths — accessible without auth.
+  const isPublic = pathname === "/login" || pathname === "/telemetry";
+
+  // Not logged in and not on a public page → redirect to login
+  if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
