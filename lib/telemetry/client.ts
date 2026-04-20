@@ -1,12 +1,8 @@
 import { createClient } from "@/lib/supabase/client";
 import type { SceneId } from "@/lib/telemetry/scenes";
 
-export type ConsentState = "granted" | "declined" | null;
-
 export type EventName =
   | "session_start"
-  | "consent_granted"
-  | "consent_declined"
   | "scene_enter"
   | "scene_leave"
   | "onboarding_started"
@@ -40,17 +36,14 @@ type QueuedEvent = {
 
 const LS_SID = "md.telemetry.sid";
 const LS_LAST = "md.telemetry.last";
-const LS_CONSENT = "md.telemetry.consent";
 const LS_EVER = "md.telemetry.everSeen";
 const LS_STARTED_SID = "md.telemetry.startedSid";
 const SESSION_IDLE_MS = 30 * 60 * 1000;
 const FLUSH_DEBOUNCE_MS = 1500;
 const FLUSH_BATCH_SIZE = 10;
-const PRE_CONSENT_CAP = 50;
 const RETRY_LIMIT = 3;
 
 const queue: QueuedEvent[] = [];
-let preConsentBuffer: QueuedEvent[] = [];
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
 let retries = 0;
 let sessionStartEmitted = false;
@@ -87,43 +80,10 @@ export function getSessionId(): string {
   return fresh;
 }
 
-export function getConsent(): ConsentState {
-  if (!isBrowser()) return null;
-  const v = localStorage.getItem(LS_CONSENT);
-  if (v === "granted" || v === "declined") return v;
-  return null;
-}
-
-export function setConsent(value: "granted" | "declined"): void {
-  if (!isBrowser()) return;
-  localStorage.setItem(LS_CONSENT, value);
-  window.dispatchEvent(new CustomEvent("md:consent", { detail: value }));
-  if (value === "granted") {
-    emitConsentGranted();
-    flushPreConsentBuffer();
-  } else {
-    preConsentBuffer = [];
-  }
-}
-
-function emitConsentGranted(): void {
-  ensureSessionStart();
-  enqueue({
-    session_id: getSessionId(),
-    event_name: "consent_granted",
-    scene: null,
-    props: {},
-    path: safePath(),
-    user_agent: safeUA(),
-  });
-}
-
 function ensureSessionStart(): void {
   if (sessionStartEmitted) return;
   sessionStartEmitted = true;
   const sid = getSessionId();
-  // В течение одной сессии session_start должен быть один — даже если
-  // страница перезагружалась несколько раз. Храним флаг в LS по sid.
   if (isBrowser()) {
     const startedFor = localStorage.getItem(LS_STARTED_SID);
     if (startedFor === sid) return;
@@ -152,14 +112,6 @@ function safeUA(): string | null {
 }
 
 function enqueue(evt: QueuedEvent): void {
-  const consent = getConsent();
-  if (consent !== "granted") {
-    preConsentBuffer.push(evt);
-    if (preConsentBuffer.length > PRE_CONSENT_CAP) {
-      preConsentBuffer = preConsentBuffer.slice(-PRE_CONSENT_CAP);
-    }
-    return;
-  }
   queue.push(evt);
   if (queue.length >= FLUSH_BATCH_SIZE) {
     void flushQueue();
@@ -174,13 +126,6 @@ function scheduleFlush(): void {
     flushTimer = null;
     void flushQueue();
   }, FLUSH_DEBOUNCE_MS);
-}
-
-function flushPreConsentBuffer(): void {
-  if (preConsentBuffer.length === 0) return;
-  for (const e of preConsentBuffer) queue.push(e);
-  preConsentBuffer = [];
-  void flushQueue();
 }
 
 async function flushQueue(): Promise<void> {
@@ -227,7 +172,7 @@ export function track(
 ): void {
   if (!isBrowser()) return;
   const sid = getSessionId();
-  if (getConsent() === "granted") ensureSessionStart();
+  ensureSessionStart();
   enqueue({
     session_id: sid,
     event_name: name,
