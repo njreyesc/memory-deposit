@@ -9,6 +9,7 @@ export interface TelemetryRowExport {
   created_at: string;
   session_id: string;
   user_id: string | null;
+  user_name: string | null;
   event_name: string;
   scene: string | null;
   props: unknown;
@@ -19,6 +20,7 @@ const CSV_HEADER = [
   "timestamp_iso",
   "session_id",
   "user_id",
+  "user_name",
   "event_name",
   "scene",
   "path",
@@ -38,6 +40,7 @@ function toCsv(rows: TelemetryRowExport[]): string {
       r.created_at,
       r.session_id,
       r.user_id ?? "",
+      r.user_name ?? "",
       r.event_name,
       r.scene ?? "",
       r.path ?? "",

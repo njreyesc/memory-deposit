@@ -53,6 +53,11 @@ let flushTimer: ReturnType<typeof setTimeout> | null = null;
 let retries = 0;
 let sessionStartEmitted = false;
 
+// Кеш полного имени пользователя, чтобы не дёргать users.full_name на каждом
+// flush. Инвалидируется, если userId меняется (смена сессии, переключение роли).
+let cachedUserName: string | null = null;
+let cachedUserNameFor: string | null = null;
+
 function isBrowser(): boolean {
   return typeof window !== "undefined";
 }
@@ -143,9 +148,40 @@ async function flushQueue(): Promise<void> {
     const { data: auth } = await supabase.auth.getUser();
     const userId = auth.user?.id ?? null;
 
+    // Подтягиваем full_name один раз на userId — users_select_all RLS это
+    // разрешает. Для demo-пользователей имя ещё хранится в
+    // auth.user.user_metadata.full_name — используем как бесплатный fallback
+    // без лишнего запроса.
+    let userName: string | null = null;
+    if (userId) {
+      if (cachedUserNameFor === userId && cachedUserName) {
+        userName = cachedUserName;
+      } else {
+        const metaName = (auth.user?.user_metadata as { full_name?: string } | null)
+          ?.full_name;
+        if (typeof metaName === "string" && metaName.trim().length > 0) {
+          userName = metaName.trim();
+        } else {
+          const { data: userRow } = await supabase
+            .from("users")
+            .select("full_name")
+            .eq("id", userId)
+            .maybeSingle();
+          const row = userRow as { full_name: string | null } | null;
+          userName = row?.full_name ?? null;
+        }
+        cachedUserName = userName;
+        cachedUserNameFor = userId;
+      }
+    } else {
+      cachedUserName = null;
+      cachedUserNameFor = null;
+    }
+
     const rows = batch.map((e) => ({
       session_id: e.session_id,
       user_id: userId,
+      user_name: userName,
       event_name: e.event_name,
       scene: e.scene,
       props: e.props,
