@@ -15,6 +15,12 @@ export interface FunnelStep {
   sessions: number;
 }
 
+export interface ExtraMilestone {
+  key: string;
+  label: string;
+  sessions: number;
+}
+
 export interface SceneStat {
   scene: string;
   avg_ms: number;
@@ -64,12 +70,14 @@ function formatDate(iso: string): string {
 export function TelemetryDashboard({
   kpis,
   funnel,
+  extras,
   sceneTime,
   topEvents,
   sessions,
 }: {
   kpis: TelemetryKpis;
   funnel: FunnelStep[];
+  extras: ExtraMilestone[];
   sceneTime: SceneStat[];
   topEvents: TopEvent[];
   sessions: SessionRow[];
@@ -158,6 +166,50 @@ export function TelemetryDashboard({
                     style={{
                       width: `${Math.max(2, pct)}%`,
                       backgroundColor: barColor,
+                    }}
+                  />
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+
+      <section className="rounded-lg border border-border bg-card p-5">
+        <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+          Дополнительные возможности
+        </p>
+        <h2 className="mt-1 font-heading text-xl font-medium">
+          Куда ещё заходят
+        </h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Шаги вне основной воронки — считаются независимо от онбординга.
+          Проценты — от всех запущенных сессий.
+        </p>
+        <ol className="mt-4 space-y-3">
+          {extras.map((m) => {
+            const pct =
+              funnelBase > 0 ? (m.sessions / funnelBase) * 100 : 0;
+            return (
+              <li key={m.key} className="space-y-1.5">
+                <div className="flex items-baseline justify-between gap-3 text-sm">
+                  <span className="font-medium">{m.label}</span>
+                  <span className="tabular-nums text-muted-foreground">
+                    {m.sessions} · {pct.toFixed(0)}%
+                  </span>
+                </div>
+                <div
+                  className="h-2 overflow-hidden rounded-full"
+                  style={{
+                    backgroundColor:
+                      "color-mix(in srgb, var(--muted) 70%, transparent)",
+                  }}
+                >
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${Math.max(2, pct)}%`,
+                      backgroundColor: "var(--primary)",
                     }}
                   />
                 </div>
