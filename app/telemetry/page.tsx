@@ -21,6 +21,7 @@ interface RawRow {
   created_at: string;
   session_id: string;
   user_id: string | null;
+  user_name: string | null;
   event_name: string;
   scene: string | null;
   props: unknown;
@@ -44,7 +45,9 @@ export default async function TelemetryPage() {
       .select("id", { count: "exact", head: true }),
     supabase
       .from("telemetry_events")
-      .select("id, created_at, session_id, user_id, event_name, scene, props, path")
+      .select(
+        "id, created_at, session_id, user_id, user_name, event_name, scene, props, path"
+      )
       .order("created_at", { ascending: false })
       .limit(RAW_LIMIT),
     supabase.rpc("telemetry_funnel"),
@@ -73,6 +76,7 @@ export default async function TelemetryPage() {
       end: number;
       events: number;
       user_id: string | null;
+      user_name: string | null;
       reached_trigger: boolean;
     }
   >();
@@ -90,6 +94,7 @@ export default async function TelemetryPage() {
       prev.end = Math.max(prev.end, ts);
       prev.events += 1;
       if (!prev.user_id && row.user_id) prev.user_id = row.user_id;
+      if (!prev.user_name && row.user_name) prev.user_name = row.user_name;
       if (row.event_name === "trigger_simulated") prev.reached_trigger = true;
     } else {
       sessionsMap.set(row.session_id, {
@@ -98,6 +103,7 @@ export default async function TelemetryPage() {
         end: ts,
         events: 1,
         user_id: row.user_id,
+        user_name: row.user_name,
         reached_trigger: row.event_name === "trigger_simulated",
       });
     }
@@ -125,6 +131,7 @@ export default async function TelemetryPage() {
       end_at: new Date(s.end).toISOString(),
       events: s.events,
       user_id: s.user_id,
+      user_name: s.user_name,
       reached_trigger: s.reached_trigger,
     }));
 
@@ -151,6 +158,7 @@ export default async function TelemetryPage() {
     created_at: r.created_at,
     session_id: r.session_id,
     user_id: r.user_id,
+    user_name: r.user_name,
     event_name: r.event_name,
     scene: r.scene,
     props: r.props,

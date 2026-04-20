@@ -32,6 +32,7 @@ export interface SessionRow {
   end_at: string;
   events: number;
   user_id: string | null;
+  user_name: string | null;
   reached_trigger: boolean;
 }
 
@@ -280,6 +281,7 @@ export function TelemetryDashboard({
                   <th className="pb-2 pr-4 font-medium">Начало</th>
                   <th className="pb-2 pr-4 font-medium">Длительность</th>
                   <th className="pb-2 pr-4 font-medium">События</th>
+                  <th className="pb-2 pr-4 font-medium">Имя</th>
                   <th className="pb-2 pr-4 font-medium">User</th>
                   <th className="pb-2 font-medium">Trigger</th>
                 </tr>
@@ -304,6 +306,13 @@ export function TelemetryDashboard({
                         {formatMs(duration)}
                       </td>
                       <td className="py-2 pr-4 tabular-nums">{s.events}</td>
+                      <td className="py-2 pr-4">
+                        {s.user_name ? (
+                          s.user_name
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
                       <td className="py-2 pr-4 font-mono text-xs text-muted-foreground">
                         {s.user_id ? s.user_id.slice(0, 8) : "—"}
                       </td>
