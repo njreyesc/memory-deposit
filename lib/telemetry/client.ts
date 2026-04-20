@@ -23,7 +23,9 @@ export type EventName =
   | "finance_row_added"
   | "finance_row_removed"
   | "finance_row_edited"
-  | "finance_recipient_changed";
+  | "finance_recipient_changed"
+  | "ai_opened"
+  | "ai_question_asked";
 
 type JsonPrimitive = string | number | boolean | null;
 type JsonValue = JsonPrimitive | JsonValue[] | { [k: string]: JsonValue };

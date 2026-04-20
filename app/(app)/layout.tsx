@@ -4,6 +4,7 @@ import { isBreadwinner } from "@/lib/auth/current-role";
 import { resolveTestSession } from "@/lib/auth/test-session";
 import { RoleSwitcher } from "@/components/sber/role-switcher";
 import { SidebarNav } from "@/components/sber/sidebar-nav";
+import { AssistantWidget } from "@/components/assistant/assistant-widget";
 
 interface RecipientEventRow {
   owner_id: string;
@@ -75,6 +76,8 @@ export default async function AppLayout({
         {/* Content */}
         <main className="flex-1 p-6">{children}</main>
       </div>
+
+      <AssistantWidget userId={user.id} />
     </div>
   );
 }
