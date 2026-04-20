@@ -19,7 +19,11 @@ export type EventName =
   | "video_recording_started"
   | "video_recording_stopped"
   | "video_sealed"
-  | "trigger_simulated";
+  | "trigger_simulated"
+  | "finance_row_added"
+  | "finance_row_removed"
+  | "finance_row_edited"
+  | "finance_recipient_changed";
 
 type JsonPrimitive = string | number | boolean | null;
 type JsonValue = JsonPrimitive | JsonValue[] | { [k: string]: JsonValue };
