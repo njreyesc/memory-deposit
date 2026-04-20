@@ -169,8 +169,8 @@ export default async function TelemetryPage() {
               Что происходит у тестеров
             </h1>
             <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-              События собираются после клика «Помогаю» на баннере согласия. Без
-              содержимого писем и личных данных.
+              Поведенческие метрики тестеров прототипа — без содержимого писем
+              и личных данных, только длины, enum-выборы и длительности.
             </p>
           </div>
           <TelemetryExport rows={exportRows} />

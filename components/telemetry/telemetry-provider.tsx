@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { flushNow, getSessionId } from "@/lib/telemetry/client";
-import { ConsentBanner } from "@/components/telemetry/consent-banner";
 
 export function TelemetryProvider({
   children,
@@ -25,10 +24,5 @@ export function TelemetryProvider({
     };
   }, []);
 
-  return (
-    <>
-      {children}
-      <ConsentBanner />
-    </>
-  );
+  return <>{children}</>;
 }
