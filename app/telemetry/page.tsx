@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   TelemetryDashboard,
   type FunnelStep,
@@ -11,6 +11,10 @@ import {
   TelemetryExport,
   type TelemetryRowExport,
 } from "@/components/admin/telemetry-export";
+
+// Публичный дашборд. Чтение идёт через service-role (обход RLS),
+// поэтому страница доступна без auth и без проверки роли.
+export const dynamic = "force-dynamic";
 
 interface RawRow {
   id: string;
@@ -26,7 +30,7 @@ interface RawRow {
 const RAW_LIMIT = 2000;
 
 export default async function TelemetryPage() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const [
     totalRes,
@@ -154,12 +158,12 @@ export default async function TelemetryPage() {
   }));
 
   return (
-    <div className="telemetry-paper -m-6 min-h-[calc(100vh-4rem)] p-6 md:-m-6 md:p-12">
+    <div className="telemetry-paper min-h-screen p-6 md:p-12">
       <div className="mx-auto max-w-6xl space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-              Админ · телеметрия
+              Телеметрия
             </p>
             <h1 className="mt-2 font-heading text-3xl font-medium leading-tight tracking-tight md:text-4xl">
               Что происходит у тестеров

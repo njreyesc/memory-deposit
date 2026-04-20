@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Download, FileJson, RefreshCw, Trash2 } from "lucide-react";
+import { Download, FileJson, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/client";
 
 export interface TelemetryRowExport {
   id: string;
@@ -65,9 +63,6 @@ function download(filename: string, body: string, mime: string) {
 
 export function TelemetryExport({ rows }: { rows: TelemetryRowExport[] }) {
   const router = useRouter();
-  const [deleting, setDeleting] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-
   const today = new Date().toISOString().slice(0, 10);
 
   function handleCsv() {
@@ -84,30 +79,6 @@ export function TelemetryExport({ rows }: { rows: TelemetryRowExport[] }) {
       JSON.stringify(rows, null, 2),
       "application/json"
     );
-  }
-
-  async function handleReset() {
-    if (
-      !confirm(
-        "Удалить все события телеметрии? Действие необратимо."
-      )
-    )
-      return;
-    setDeleting(true);
-    setErr(null);
-    try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("telemetry_events")
-        .delete()
-        .gte("created_at", "1970-01-01");
-      if (error) throw error;
-      router.refresh();
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : "Unknown error");
-    } finally {
-      setDeleting(false);
-    }
   }
 
   return (
@@ -129,17 +100,6 @@ export function TelemetryExport({ rows }: { rows: TelemetryRowExport[] }) {
         <FileJson className="h-3.5 w-3.5" />
         JSON
       </Button>
-      <Button
-        size="sm"
-        variant="ghost"
-        onClick={handleReset}
-        disabled={deleting}
-        className="gap-1 text-destructive"
-      >
-        <Trash2 className="h-3.5 w-3.5" />
-        {deleting ? "Удаляем…" : "Сбросить"}
-      </Button>
-      {err && <span className="text-xs text-destructive">{err}</span>}
     </div>
   );
 }
