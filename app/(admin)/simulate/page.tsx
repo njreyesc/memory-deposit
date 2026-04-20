@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { SimulateActions } from "@/components/admin/simulate-actions";
+import { SceneTracker } from "@/components/telemetry/scene-tracker";
 
 interface Stats {
   notes: number;
@@ -50,6 +51,7 @@ export default async function SimulatePage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
+      <SceneTracker scene="simulate" />
       <div>
         <h1 className="text-2xl font-bold">Админ-панель (демо)</h1>
         <p className="mt-1 text-xs text-muted-foreground">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter_Tight, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import { FEATURES } from "@/lib/flags";
+import { TelemetryProvider } from "@/components/telemetry/telemetry-provider";
 
 const interTight = Inter_Tight({
   variable: "--font-inter-tight",
@@ -31,7 +32,9 @@ export default function RootLayout({
       lang="ru"
       className={`${interTight.variable} ${sourceSerif.variable} ${fontPairClass} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <TelemetryProvider>{children}</TelemetryProvider>
+      </body>
     </html>
   );
 }

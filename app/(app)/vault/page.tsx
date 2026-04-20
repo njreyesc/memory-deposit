@@ -10,6 +10,7 @@ import type {
 } from "@/components/vault/access-rules-dialog";
 import { EventStatusBanner } from "@/components/vault/event-status-banner";
 import { LettersCapsules } from "@/components/vault/letters-capsules";
+import { SceneTracker } from "@/components/telemetry/scene-tracker";
 import {
   RecipientView,
   type RecipientMaterial,
@@ -199,6 +200,7 @@ async function BreadwinnerVault({ userId }: { userId: string }) {
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
+      <SceneTracker scene="vault" />
       {deliveredTrigger?.confirmed_at && (
         <EventStatusBanner confirmedAt={deliveredTrigger.confirmed_at} />
       )}

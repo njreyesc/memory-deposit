@@ -145,3 +145,51 @@ body {
   font-weight: 500;
   letter-spacing: -0.01em;
 }
+
+/* Warm paper palette, scoped to /admin/telemetry only.
+   Mirrors the mockup: paper-tinted backgrounds, ochre accent,
+   moss for the first funnel step, ember for warnings.
+   Heightened selector specificity + !important so the wrapper
+   beats Tailwind's body-level utilities. */
+.telemetry-paper,
+.telemetry-paper * {
+  --moss: oklch(0.58 0.080 125);
+  --ember: oklch(0.62 0.180 35);
+}
+.telemetry-paper {
+  /* Tailwind v4 resolves bg-card → var(--color-card) at compile time, so we
+     must override the `--color-*` tokens as well as the raw tokens. */
+  --background: oklch(0.965 0.018 82);
+  --foreground: oklch(0.22 0.022 60);
+  --card: oklch(0.985 0.010 84);
+  --card-foreground: oklch(0.22 0.022 60);
+  --muted: oklch(0.93 0.020 78);
+  --muted-foreground: oklch(0.46 0.025 65);
+  --border: oklch(0.84 0.028 74);
+  --primary: oklch(0.64 0.115 68);
+  --primary-foreground: oklch(0.98 0.010 85);
+  --accent: oklch(0.92 0.030 80);
+  --accent-foreground: oklch(0.22 0.022 60);
+
+  --color-background: oklch(0.965 0.018 82);
+  --color-foreground: oklch(0.22 0.022 60);
+  --color-card: oklch(0.985 0.010 84);
+  --color-card-foreground: oklch(0.22 0.022 60);
+  --color-muted: oklch(0.93 0.020 78);
+  --color-muted-foreground: oklch(0.46 0.025 65);
+  --color-border: oklch(0.84 0.028 74);
+  --color-primary: oklch(0.64 0.115 68);
+  --color-primary-foreground: oklch(0.98 0.010 85);
+  --color-accent: oklch(0.92 0.030 80);
+  --color-accent-foreground: oklch(0.22 0.022 60);
+
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.telemetry-paper h1,
+.telemetry-paper h2 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
