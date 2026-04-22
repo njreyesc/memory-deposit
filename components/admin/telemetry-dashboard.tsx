@@ -37,7 +37,7 @@ export interface SessionRow {
 }
 
 const STEP_LABELS: Record<string, string> = {
-  session_start: "Запустил прототип",
+  session_start: "Начал сессию",
   onboarding_enter: "Пришёл на онбординг",
   onboarding_completed: "Завершил онбординг",
   vault_enter: "Дошёл до vault",
