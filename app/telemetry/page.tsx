@@ -177,7 +177,7 @@ export default async function TelemetryPage() {
               Что происходит у тестеров
             </h1>
             <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-              Поведенческие метрики тестеров прототипа — без содержимого писем
+              Поведенческие метрики тестеров — без содержимого писем
               и личных данных, только длины, enum-выборы и длительности.
             </p>
           </div>
