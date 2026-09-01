@@ -9,8 +9,18 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import TestLoginForm from "./test-login-form";
+import RealLoginForm from "./real-login-form";
 
-export function LoginHero() {
+interface LoginHeroProps {
+  /**
+   * Comes from the server (see page.tsx) — TEST_MODE is not NEXT_PUBLIC and
+   * cannot be read in the browser. This only decides whether the tester form
+   * is drawn; the real guard is the 404 in the routes themselves.
+   */
+  testMode: boolean;
+}
+
+export function LoginHero({ testMode }: LoginHeroProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -77,8 +87,16 @@ export function LoginHero() {
               Цифровой сейф для вашей семьи
             </p>
           </DialogHeader>
-          <div className="pt-2">
-            <TestLoginForm />
+          <div className="space-y-5 pt-2">
+            <RealLoginForm />
+            {testMode && (
+              <div className="space-y-3 border-t border-border pt-4">
+                <p className="text-center text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Тестовый контур
+                </p>
+                <TestLoginForm />
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

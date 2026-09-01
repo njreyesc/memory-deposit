@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { DEMO_USERS, DEMO_PASSWORD, type DemoRole } from "@/lib/auth/demo-users";
+import { isTestMode } from "@/lib/test-mode";
 
 // must match test-session create route
 const TEST_PASSWORD = "demo123456";
@@ -16,6 +17,13 @@ const TEST_PASSWORD = "demo123456";
  * never for production.
  */
 export async function POST(request: Request) {
+  // Test contour only. This route hands out a real Supabase session for a
+  // role name alone — no credentials — so outside the test contour it must
+  // not exist. 404 rather than 403: an absent route advertises nothing.
+  if (!isTestMode()) {
+    return NextResponse.json({ error: "not found" }, { status: 404 });
+  }
+
   try {
     const body = await request.json();
     const role = body.role as DemoRole;

@@ -44,11 +44,27 @@ export default async function AppLayout({
 
   const testSession = await resolveTestSession(user.id);
 
+  // Real account's display name for the header. Demo and test-session accounts
+  // are labelled from their own fixtures inside RoleSwitcher.
+  const profileRes = await supabase
+    .from("users")
+    .select("full_name")
+    .eq("id", user.id)
+    .maybeSingle();
+  const profileName =
+    (profileRes.data as { full_name: string | null } | null)?.full_name ?? null;
+  const profileRole = isBreadwinnerUser ? "breadwinner" : "recipient";
+
   if (silentRecipientMode) {
     return (
       <div className="flex min-h-screen flex-col">
         <header className="flex items-center justify-end px-6 py-3">
-          <RoleSwitcher currentUserId={user.id} testSession={testSession} />
+          <RoleSwitcher
+            currentUserId={user.id}
+            testSession={testSession}
+            currentUserName={profileName}
+            currentUserRole={profileRole}
+          />
         </header>
         <main className="flex-1 p-6">{children}</main>
       </div>
@@ -70,7 +86,12 @@ export default async function AppLayout({
       <div className="flex flex-1 flex-col">
         {/* Top bar */}
         <header className="flex items-center justify-end border-b border-white/10 px-6 py-3">
-          <RoleSwitcher currentUserId={user.id} testSession={testSession} />
+          <RoleSwitcher
+            currentUserId={user.id}
+            testSession={testSession}
+            currentUserName={profileName}
+            currentUserRole={profileRole}
+          />
         </header>
 
         {/* Content */}
