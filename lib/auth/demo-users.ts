@@ -25,4 +25,6 @@ export const DEMO_USERS: Record<DemoRole, DemoUser> = {
   },
 } as const;
 
-export const DEMO_PASSWORD = "demo123456";
+// The shared test-contour password used to live here as a constant. It is now
+// read from the environment — see lib/auth/demo-credentials.ts. This module is
+// imported by client components, so nothing secret may ever go back in here.

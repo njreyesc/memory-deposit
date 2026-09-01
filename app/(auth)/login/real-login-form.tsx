@@ -7,13 +7,13 @@ import { z } from "zod";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { loginToEmail } from "@/lib/auth/login-identity";
 
+// No pattern check here on purpose: accounts made in the Supabase dashboard
+// use a real address, and loginToEmail passes anything containing "@" through
+// unchanged. Rejecting those at sign-in would lock their owners out.
 const loginSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .min(1, "Введите email")
-    .email("Проверьте формат email"),
+  login: z.string().trim().min(1, "Введите логин"),
   password: z.string().min(1, "Введите пароль"),
 });
 
@@ -25,7 +25,7 @@ export default function RealLoginForm() {
 
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { login: "", password: "" },
   });
 
   async function onSubmit(values: LoginValues) {
@@ -35,15 +35,15 @@ export default function RealLoginForm() {
     try {
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithPassword({
-        email: values.email,
+        email: loginToEmail(values.login),
         password: values.password,
       });
 
       if (error) {
         // One message for both cases on purpose — telling apart "no such
-        // user" from "wrong password" would let anyone probe which emails
-        // are registered.
-        setServerError("Неверный email или пароль");
+        // user" from "wrong password" would let anyone probe which logins
+        // are taken.
+        setServerError("Неверный логин или пароль");
         setSubmitting(false);
         return;
       }
@@ -68,23 +68,25 @@ export default function RealLoginForm() {
       >
         <div className="space-y-1.5">
           <label
-            htmlFor="email"
+            htmlFor="login"
             className="text-sm font-medium text-foreground"
           >
-            Email
+            Логин
           </label>
           <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            placeholder="you@example.com"
+            id="login"
+            type="text"
+            autoComplete="username"
+            autoCapitalize="none"
+            spellCheck={false}
+            placeholder="ivan.petrov"
             disabled={submitting}
             className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-            {...form.register("email")}
+            {...form.register("login")}
           />
-          {form.formState.errors.email && (
+          {form.formState.errors.login && (
             <p className="text-xs text-destructive">
-              {form.formState.errors.email.message}
+              {form.formState.errors.login.message}
             </p>
           )}
         </div>
