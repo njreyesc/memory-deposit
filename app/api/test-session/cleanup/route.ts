@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { cleanupSession } from "@/lib/test-sessions/cleanup";
+import { isTestMode } from "@/lib/test-mode";
 
 export const runtime = "nodejs";
 
@@ -9,6 +10,14 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: Request) {
+  // Counterpart of /api/test-session/create — gated the same way. Sessions
+  // only exist where the test contour is on. Bulk janitorial cleanup stays in
+  // /api/test-session/cleanup-all, which is guarded by ADMIN_CLEANUP_KEY and
+  // deliberately left reachable so leftovers can be swept anywhere.
+  if (!isTestMode()) {
+    return NextResponse.json({ error: "not found" }, { status: 404 });
+  }
+
   let sessionToken: string;
   try {
     const raw = (await request.json()) as unknown;

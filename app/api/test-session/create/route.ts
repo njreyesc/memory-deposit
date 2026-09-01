@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isTestMode } from "@/lib/test-mode";
 
 export const runtime = "nodejs";
 
@@ -19,6 +20,11 @@ const bodySchema = z.object({
 type RequestBody = z.infer<typeof bodySchema>;
 
 export async function POST(request: Request) {
+  // Test contour only — this route creates auth users and signs one in.
+  if (!isTestMode()) {
+    return NextResponse.json({ error: "not found" }, { status: 404 });
+  }
+
   let parsed: RequestBody;
   try {
     const raw = (await request.json()) as unknown;

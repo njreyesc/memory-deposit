@@ -22,34 +22,61 @@ export type TestSessionInfo = {
 interface RoleSwitcherProps {
   currentUserId: string;
   testSession?: TestSessionInfo;
+  /**
+   * Real signed-in user's name and role, from public.users.
+   * Used when the account is neither a demo seed user nor a test session —
+   * without it every real account fell through to the "maria" branch below
+   * and was labelled "Maria Ivanova".
+   */
+  currentUserName?: string | null;
+  currentUserRole?: "breadwinner" | "recipient" | null;
 }
 
 export function RoleSwitcher({
   currentUserId,
   testSession,
+  currentUserName,
+  currentUserRole,
 }: RoleSwitcherProps) {
   const [loggingOut, setLoggingOut] = useState(false);
 
-  const isTestMode = Boolean(testSession);
+  const initialOf = (s: string) => s.trim().charAt(0).toUpperCase() || "?";
 
-  const currentRole: DemoRole = testSession
+  // Which fixture, if any, this account belongs to. Both must be matched
+  // explicitly — anything unmatched is a real user, not "the other demo one".
+  const testRole: DemoRole | null = testSession
     ? currentUserId === testSession.breadwinnerUserId
       ? "alexey"
       : "maria"
-    : currentUserId === DEMO_USERS.alexey.id
+    : null;
+
+  const demoRole: DemoRole | null =
+    currentUserId === DEMO_USERS.alexey.id
       ? "alexey"
-      : "maria";
+      : currentUserId === DEMO_USERS.maria.id
+        ? "maria"
+        : null;
 
-  const currentLabel = isTestMode
-    ? currentRole === "alexey"
-      ? testSession!.breadwinnerName
-      : testSession!.recipientName
-    : DEMO_USERS[currentRole].full_name;
+  let currentLabel: string;
+  let currentInitial: string;
+  let isOwner: boolean;
 
-  const initialOf = (s: string) => s.trim().charAt(0).toUpperCase() || "?";
-  const currentInitial = isTestMode
-    ? initialOf(currentLabel)
-    : DEMO_USERS[currentRole].avatar_initial;
+  if (testSession && testRole) {
+    currentLabel =
+      testRole === "alexey"
+        ? testSession.breadwinnerName
+        : testSession.recipientName;
+    currentInitial = initialOf(currentLabel);
+    isOwner = testRole === "alexey";
+  } else if (demoRole) {
+    currentLabel = DEMO_USERS[demoRole].full_name;
+    currentInitial = DEMO_USERS[demoRole].avatar_initial;
+    isOwner = demoRole === "alexey";
+  } else {
+    currentLabel = currentUserName?.trim() || "Профиль";
+    currentInitial = initialOf(currentLabel);
+    isOwner = currentUserRole === "breadwinner";
+  }
 
   async function handleLogout() {
     setLoggingOut(true);
@@ -67,7 +94,7 @@ export function RoleSwitcher({
         <div
           className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white"
           style={{
-            backgroundColor: currentRole === "alexey" ? "#21A038" : "#4CAF50",
+            backgroundColor: isOwner ? "#21A038" : "#4CAF50",
           }}
         >
           {currentInitial}

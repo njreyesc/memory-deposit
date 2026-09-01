@@ -25,6 +25,15 @@ export default async function AdminLayout({
 
   const testSession = await resolveTestSession(user.id);
 
+  // Role is always breadwinner here — the guard above redirects everyone else.
+  const profileRes = await supabase
+    .from("users")
+    .select("full_name")
+    .eq("id", user.id)
+    .maybeSingle();
+  const profileName =
+    (profileRes.data as { full_name: string | null } | null)?.full_name ?? null;
+
   return (
     <div className="flex min-h-screen">
       <aside className="flex w-56 flex-col border-r border-white/10 p-4">
@@ -37,7 +46,12 @@ export default async function AdminLayout({
 
       <div className="flex flex-1 flex-col">
         <header className="flex items-center justify-end border-b border-white/10 px-6 py-3">
-          <RoleSwitcher currentUserId={user.id} testSession={testSession} />
+          <RoleSwitcher
+            currentUserId={user.id}
+            testSession={testSession}
+            currentUserName={profileName}
+            currentUserRole="breadwinner"
+          />
         </header>
         <main className="flex-1 p-6">{children}</main>
       </div>
