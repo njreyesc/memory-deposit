@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { DEMO_USERS, DEMO_PASSWORD, type DemoRole } from "@/lib/auth/demo-users";
+import { DEMO_USERS, type DemoRole } from "@/lib/auth/demo-users";
 import { isTestMode } from "@/lib/test-mode";
-
-// must match test-session create route
-const TEST_PASSWORD = "demo123456";
+import { getDemoPassword } from "@/lib/auth/demo-credentials";
 
 /**
  * Mock login for the demo prototype.
@@ -13,8 +11,9 @@ const TEST_PASSWORD = "demo123456";
  * Approach: signInWithPassword with a pre-set demo password.
  * Chosen over generateLink/magiclink because it's a single step —
  * no token extraction or verifyOtp round-trip needed.
- * The password is hardcoded and visible — acceptable for a demo,
- * never for production.
+ *
+ * The password comes from DEMO_AUTH_PASSWORD, never from source: this repo is
+ * public, so a committed value is a published credential.
  */
 export async function POST(request: Request) {
   // Test contour only. This route hands out a real Supabase session for a
@@ -51,7 +50,7 @@ export async function POST(request: Request) {
       const { error: createError } = await admin.auth.admin.createUser({
         id: demoUser.id,
         email: demoUser.email,
-        password: DEMO_PASSWORD,
+        password: getDemoPassword(),
         email_confirm: true,
         user_metadata: {
           full_name: demoUser.full_name,
@@ -75,7 +74,7 @@ export async function POST(request: Request) {
     const { data: signInData, error: signInError } =
       await anonClient.auth.signInWithPassword({
         email: demoUser.email,
-        password: DEMO_PASSWORD,
+        password: getDemoPassword(),
       });
 
     if (signInError || !signInData.session) {
@@ -161,7 +160,7 @@ async function loginTestSession(role: DemoRole, sessionToken: string) {
   const { data: signInData, error: signInError } =
     await anonClient.auth.signInWithPassword({
       email,
-      password: TEST_PASSWORD,
+      password: getDemoPassword(),
     });
 
   if (signInError || !signInData.session) {

@@ -3,11 +3,9 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isTestMode } from "@/lib/test-mode";
+import { getDemoPassword } from "@/lib/auth/demo-credentials";
 
 export const runtime = "nodejs";
-
-// shared test-contour password, not a secret
-const TEST_PASSWORD = "demo123456";
 
 const bodySchema = z.object({
   testName: z
@@ -83,7 +81,7 @@ export async function POST(request: Request) {
   try {
     const alexeyAuth = await admin.auth.admin.createUser({
       email: alexeyEmail,
-      password: TEST_PASSWORD,
+      password: getDemoPassword(),
       email_confirm: true,
     });
     if (alexeyAuth.error || !alexeyAuth.data.user) {
@@ -95,7 +93,7 @@ export async function POST(request: Request) {
 
     const mariaAuth = await admin.auth.admin.createUser({
       email: mariaEmail,
-      password: TEST_PASSWORD,
+      password: getDemoPassword(),
       email_confirm: true,
     });
     if (mariaAuth.error || !mariaAuth.data.user) {
@@ -154,7 +152,7 @@ export async function POST(request: Request) {
     );
     const signIn = await anonClient.auth.signInWithPassword({
       email: alexeyEmail,
-      password: TEST_PASSWORD,
+      password: getDemoPassword(),
     });
     if (signIn.error || !signIn.data.session) {
       return await fail(

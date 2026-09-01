@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import TestLoginForm from "./test-login-form";
 import RealLoginForm from "./real-login-form";
+import RegisterForm from "./register-form";
 
 interface LoginHeroProps {
   /**
@@ -22,6 +23,7 @@ interface LoginHeroProps {
 
 export function LoginHero({ testMode }: LoginHeroProps) {
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<"login" | "register">("login");
 
   return (
     <div className="relative min-h-screen">
@@ -88,7 +90,36 @@ export function LoginHero({ testMode }: LoginHeroProps) {
             </p>
           </DialogHeader>
           <div className="space-y-5 pt-2">
-            <RealLoginForm />
+            <div
+              role="tablist"
+              aria-label="Вход или регистрация"
+              className="grid grid-cols-2 gap-1 rounded-full bg-muted p-1"
+            >
+              {(
+                [
+                  ["login", "Войти"],
+                  ["register", "Регистрация"],
+                ] as const
+              ).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === value}
+                  onClick={() => setMode(value)}
+                  className={
+                    mode === value
+                      ? "rounded-full bg-background px-4 py-1.5 text-sm font-medium shadow-sm"
+                      : "rounded-full px-4 py-1.5 text-sm text-muted-foreground transition hover:text-foreground"
+                  }
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {mode === "login" ? <RealLoginForm /> : <RegisterForm />}
+
             {testMode && (
               <div className="space-y-3 border-t border-border pt-4">
                 <p className="text-center text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
